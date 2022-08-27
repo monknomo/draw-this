@@ -202,7 +202,7 @@ let tools = {
       drawHorse.hideStampSelectors();
     },
     draw: (e) => {
-              debugger;
+              
       let bubbleUrl1 = "https://cdn.glitch.global/ecc7c6c7-2450-49b5-b5e7-94175cb9ac28/bubble.svg?v=1652888646403";
       let bubbleUrl2 = "https://cdn.glitch.global/ecc7c6c7-2450-49b5-b5e7-94175cb9ac28/bubble2.svg?v=1652888650037";
       let bubbleUrl3 = "https://cdn.glitch.global/ecc7c6c7-2450-49b5-b5e7-94175cb9ac28/bubble3.svg?v=1652888653363";
@@ -617,7 +617,7 @@ let drawHorse = {
     );
   },
   draw: (e) => {
-    debugger;
+    
     if ((e.buttons && e.buttons === 1) || (e.touches && e.touches.length > 0))
       drawHorse.currentTool.draw(e);
   },
@@ -687,7 +687,7 @@ let drawHorse = {
   },
   addListeners: () => {
     window.addEventListener("resize", drawHorse.resize);
-    debugger;
+    
     document.addEventListener(
       "click",
       function (e) {

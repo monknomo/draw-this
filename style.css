@@ -48,7 +48,7 @@ button.colorChoice {
   width:3em;
 }
 
-div.colorChoice {}
+/*div.colorChoice {}*/
 
 button.selectedColorChoice {
   border: solid .15rem pink;
