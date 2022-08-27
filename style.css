@@ -1,0 +1,88 @@
+/* CSS files add styling rules to your content 
+https://paletton.com/#uid=34X0u0kf-N74UZ9aBU5jPEnnIvB
+*/
+
+body {
+  font-family: helvetica, arial, sans-serif;
+  margin: 2em;
+  background-color: orchid;
+}
+
+h1 {
+  font-style: italic;
+  color: #B0F27D;
+  font-size:large;
+  padding: 0 0 px;
+}
+
+.row {
+  display:flex;
+}
+
+div#controls {
+  width:10%;
+  max-width: 80px;
+  flex:1;
+  float:left;
+}
+
+button.control {
+  background-color: #FFF483;
+  width: "100%";
+  max-width: 80px;
+}
+
+button.selectedControl {
+  border: solid .15rem pink;
+}
+
+div#stretcher {
+  border-style:solid;
+  flex:9;
+  background-color:white;
+}
+
+button.colorChoice {
+  border:solid .1rem darkgray;
+  height:3em;
+  width:3em;
+}
+
+div.colorChoice {}
+
+button.selectedColorChoice {
+  border: solid .15rem pink;
+}
+
+button#red{
+  background-color: red;
+}
+button#orange{
+  background-color: orange;
+}
+button#yellow{
+  background-color: yellow;
+}
+button#green{
+  background-color: green;
+}
+button#blue{
+  background-color: blue;
+}
+button#violet{
+  background-color: violet;
+}
+button#purple{
+  background-color: purple;
+}
+button#black{
+  background-color:black;
+}
+button#white{
+  background-color:white;
+}
+
+button#saddlebrown{
+  background-color:saddlebrown;
+}
+
