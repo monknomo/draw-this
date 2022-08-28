@@ -741,7 +741,7 @@ window.onload = (event) => {
         drawHorse.colors.offsetHeight)
   );
   document.body.style.margin = 0;
-  drawHorse.canvas.style.position = "fixed";
+  //drawHorse.canvas.style.position = "fixed";
   drawHorse.canvas.style.width = drawHorse.stretcher.offsetWidth;
   drawHorse.canvas.style.height = drawHorse.canvasHeight;
   drawHorse.stretcher.style.height = drawHorse.canvasHeight + "px";
