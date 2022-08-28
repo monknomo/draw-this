@@ -587,13 +587,14 @@ let drawHorse = {
   },
   setPosition: (e) => {
     if (e.target === drawHorse.canvas) e.preventDefault();
+    var bcr = e.target.getBoundingClientRect();
     if (e.touches) var touch = e.touches[0];
     if (touch) {
-      drawHorse.pos.x = touch.clientX - drawHorse.canvas.offsetLeft;
-      drawHorse.pos.y = touch.clientY - drawHorse.canvas.offsetTop;
+      drawHorse.pos.x = touch.clientX - bcr.x;
+      drawHorse.pos.y = touch.clientY - bcr.y;
     } else {
-      drawHorse.pos.x = e.clientX - drawHorse.canvas.offsetLeft;
-      drawHorse.pos.y = e.clientY - drawHorse.canvas.offsetTop;
+      drawHorse.pos.x = e.clientX - bcr.x;
+      drawHorse.pos.y = e.clientY - bcr.y;
     }
   },
   resize: () => {
