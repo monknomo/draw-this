@@ -331,14 +331,6 @@ git commit -m "feat: port drips tool to TypeScript (exports getDripSize)"
 <!-- END_TASK_4 -->
 
 <!-- START_TASK_5 -->
-### Task 5: Create src/tools/eraser.ts (continuation of Task 3)
-
-Note: Eraser is created as part of Task 3 with pencil. See the eraser.ts code snippet in Task 3.
-
-**Important note on eraser controls cross-tool reference:** In the original code, the eraser tool's `settings.controls` array modifies `tools.pencil.settings.width` (cross-tool reference — likely a copy-paste bug in the original). The settings UI is never rendered (documented known issue in CLAUDE.md), so this has no visible effect. The TypeScript port changes this to modify the eraser's own settings for module isolation, eliminating the cross-tool coupling with dead code.
-
-<!-- Boundary between Task 3 eraser and Task 5 oops/nuke -->
-
 ### Task 5: Create src/tools/oops.ts and src/tools/nuke.ts
 
 **Files:**
