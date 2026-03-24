@@ -466,7 +466,7 @@ it('AC4.4: standardizeColor converts CSS color names to RGB arrays', () => {
   // vitest-canvas-mock may not provide real pixel values for named colors.
   // If it returns [0, 0, 0] for all colors, mark this test .skip with a
   // note explaining the mock canvas limitation.
-  const red = __standardizeColor!('red')
+  const red = standardizeColor('red')
   expect(red).toEqual([255, 0, 0])
 })
 ```
