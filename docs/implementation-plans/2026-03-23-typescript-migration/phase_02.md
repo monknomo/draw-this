@@ -121,6 +121,9 @@ const scriptCode = readFileSync(scriptPath, 'utf-8')
 
 // After reading script.js in Step 2, append any additional standalone functions
 // discovered there (e.g. getDripSize, hexToRgb, rgbToHex, standardizeColor).
+// Note: getDripSize is a method on tools.drips and hexToRgb, rgbToHex, standardizeColor
+// are methods on tools.bucket respectively — they are accessed via __tools.drips.getDripSize()
+// and __tools.bucket.hexToRgb() etc. in tests, not as standalone globals.
 eval(scriptCode + `
 ;globalThis.__tools = tools;
 globalThis.__drawHorse = drawHorse;
@@ -372,6 +375,8 @@ describe('getDripSize distribution', () => {
 
 Test indirectly via arc draw calls. Call `drips.draw()` many times and inspect the radius argument passed to `ctx.arc`. A radius of 0 corresponds to a getDripSize return of 0; radii ≥ 6 correspond to non-zero returns.
 
+Note: To determine the exact shape of arc call objects from `ctx.__getDrawCalls()`, add a temporary `console.log(ctx.__getDrawCalls())` after drawing and inspect the output. Alternatively, use Strategy A by accessing `__tools.drips.getDripSize()` directly since `getDripSize` is accessible as a method on the eval'd tools.drips object.
+
 ```typescript
 declare const __tools: Record<string, any>
 declare const __drawHorse: any
@@ -434,11 +439,14 @@ git commit -m "test: add baseline drips distribution tests (AC4.1–4.2)"
 
 **Implementation:**
 
+Since these are methods on `tools.bucket`, NOT standalone globals, use the `__tools` registry pattern:
+
 ```typescript
 // src/test/baseline/bucket-helpers.test.ts
-declare const __hexToRgb: ((hex: string) => [number, number, number] | number[]) | undefined
-declare const __rgbToHex: ((r: number, g: number, b: number) => string) | undefined
-declare const __standardizeColor: ((color: string) => number[]) | undefined
+declare const __tools: Record<string, any>
+
+// Access bucket helper functions via __tools.bucket
+const { hexToRgb, rgbToHex, standardizeColor } = __tools.bucket
 ```
 
 For AC4.3 (hexToRgb / rgbToHex round-trip):

@@ -27,6 +27,9 @@
 - **typescript-migration.AC3.3 Success:** oops and nuke have selectable = false
 - **typescript-migration.AC3.4 Success:** stamp and bubbles have drawsImmediately = true
 
+### typescript-migration.AC4: Pure logic correctness
+- **typescript-migration.AC4.1 & AC4.2 Note:** getDripSize distribution is covered by baseline tests in Phase 2. Import-based coverage for AC4.1/AC4.2 is added in Phase 6 Task 3.
+
 ---
 
 <!-- START_SUBCOMPONENT_A (tasks 1-2) -->
@@ -121,6 +124,8 @@ Pencil and eraser are nearly identical — eraser uses `strokeStyle = 'white'` i
 
 Original draw method in script.js: calls `playSound('pencilSound')`, sets `beginPath`, `lineWidth = 5`, `lineCap = 'round'`, `strokeStyle = drawHorse.selectedColor`, `moveTo(pos)`, `setPosition(e)`, `lineTo(pos)`, `stroke()`. The `settings.controls` array has swapped increase/decrease labels (known bug — preserve exactly).
 
+Note: The original pencil tool includes a `settings.controls` array. This UI is never rendered (see CLAUDE.md Known Issues). The TypeScript port omits the controls array to avoid dead code.
+
 ```typescript
 // src/tools/pencil.ts
 import type { Tool, ToolSettings } from '../types'
@@ -170,6 +175,8 @@ export const pencil: Tool = {
 **Step 2: Create src/tools/eraser.ts**
 
 Identical to pencil except `strokeStyle = 'white'` and plays/pauses `eraserSound`. Also includes the `console.log` from the original.
+
+Note: The original eraser's `settings.controls` array modifies `tools.pencil.settings.width` (cross-tool reference — likely a copy-paste bug in the original). The settings UI is never rendered (documented known issue in CLAUDE.md), so this has no visible effect. The TypeScript port changes this to modify the eraser's own settings for module isolation.
 
 ```typescript
 // src/tools/eraser.ts
@@ -241,9 +248,13 @@ git commit -m "feat: port pencil and eraser tools to TypeScript"
 
 The drips tool has an inline helper `getDripSize()` that must also be exported (for use in Phase 4 import-based tests).
 
+**Note on getDripSize access path:** The original calls `tools.drips.getDripSize()` via the registry. The TypeScript port calls the module-level `getDripSize()` directly. This is functionally equivalent but eliminates the indirect call path.
+
 **Step 1: Read the exact getDripSize logic from script.js (lines 73–139)**
 
 The function returns 0 roughly half the time. When non-zero: 90% chance of `Math.floor(Math.random() * 10)`, 10% chance of `Math.floor(Math.random() * 10 + 15)`. Values < 6 are clamped to 0.
+
+Note: The original drips tool includes a `settings.controls` array. This UI is never rendered (see CLAUDE.md Known Issues). The TypeScript port omits the controls array to avoid dead code.
 
 ```typescript
 // src/tools/drips.ts
@@ -320,6 +331,14 @@ git commit -m "feat: port drips tool to TypeScript (exports getDripSize)"
 <!-- END_TASK_4 -->
 
 <!-- START_TASK_5 -->
+### Task 5: Create src/tools/eraser.ts (continuation of Task 3)
+
+Note: Eraser is created as part of Task 3 with pencil. See the eraser.ts code snippet in Task 3.
+
+**Important note on eraser controls cross-tool reference:** In the original code, the eraser tool's `settings.controls` array modifies `tools.pencil.settings.width` (cross-tool reference — likely a copy-paste bug in the original). The settings UI is never rendered (documented known issue in CLAUDE.md), so this has no visible effect. The TypeScript port changes this to modify the eraser's own settings for module isolation, eliminating the cross-tool coupling with dead code.
+
+<!-- Boundary between Task 3 eraser and Task 5 oops/nuke -->
+
 ### Task 5: Create src/tools/oops.ts and src/tools/nuke.ts
 
 **Files:**
@@ -410,6 +429,8 @@ git commit -m "feat: port oops and nuke tools to TypeScript"
 
 The stamp rendering pipeline: `atob(selectedStamp.url)` → replaceAll `%%%%` with fill style → `btoa(...)` → `data:image/svg+xml;base64,` URI → `new Image(50, 50)` → `img.onload` → `ctx.drawImage`. The `draw` call is async (drawImage fires in img.onload).
 
+Note: The original stamp tool includes a `settings.controls` array. This UI is never rendered (see CLAUDE.md Known Issues). The TypeScript port omits the controls array to avoid dead code.
+
 ```typescript
 // src/tools/stamp.ts
 import type { Tool } from '../types'
@@ -472,6 +493,8 @@ git commit -m "feat: port stamp tool to TypeScript"
 - Create: `src/tools/bubbles.ts`
 
 Bubbles places 0–30 bubble images at random offsets around the click point. Three external CDN URLs are preserved as-is (tracked in GitHub issue #11 for future inlining — out of scope here).
+
+**Note on settings access path:** The original accesses `tools.bubbles.settings.maxNumberBubbles` etc. via the registry. The TypeScript port accesses these as a local constant, eliminating the indirect access path.
 
 **Step 1: Read the exact draw() implementation from script.js lines 189–241**
 

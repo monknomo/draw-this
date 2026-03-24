@@ -133,6 +133,8 @@ git commit -m "feat: extract stamp data to src/stamps.ts"
 - `addListeners` uses the global `event` object in the original (bug) — use `e` parameter instead for TypeScript compatibility
 - `colorChoices` is `HTMLCollectionOf<Element>` or similar
 
+**Note on DrawHorseContext scope:** The `DrawHorseContext` interface defined in Phase 4 covers only the subset of drawHorse properties that tools reference. The full `drawHorse` object in `drawHorse.ts` has additional properties (`header`, `stretcher`, `colors`, `canvas`, `canvasWidth`, `canvasHeight`, etc.) not in the interface — these are defined inline in the object literal's type annotation.
+
 **Step 1: Replace the Phase 4 stub with the full implementation**
 
 ```typescript
@@ -236,6 +238,7 @@ export const drawHorse: DrawHorseContext & {
     )
     drawHorse.ctx.canvas.width = drawHorse.stretcher.offsetWidth
     drawHorse.ctx.canvas.height = drawHorse.canvasHeight
+    drawHorse.stretcher.style.height = drawHorse.canvasHeight + 'px'
     drawHorse.stretcher.setAttribute(
       'style',
       `width:${drawHorse.canvasWidth}px;height:${drawHorse.canvasHeight}px;`
@@ -245,6 +248,9 @@ export const drawHorse: DrawHorseContext & {
   addListeners() {
     window.addEventListener('resize', drawHorse.resize)
 
+    // The original uses the implicit global `event` object (e.g., `event.target.closest(".tool")`).
+    // TypeScript strict mode does not allow implicit globals. Using the `e` parameter is
+    // semantically equivalent in all standard browser event dispatch paths.
     document.addEventListener(
       'click',
       function (e) {
@@ -463,6 +469,8 @@ git commit -m "feat: add src/main.ts entry point with window.onload initializati
 Tests import `drawHorse` from `../../drawHorse` directly. The setup.ts still evals `script.js` and fires `window.onload`, which means the drawHorse TypeScript module is initialized alongside the eval harness. Tests set `drawHorse.ctx` to the mock canvas context.
 
 **Key consideration:** Both the eval'd `script.js` and the imported `drawHorse.ts` module run in the same jsdom environment. The imported `drawHorse` object is different from the eval'd `__drawHorse` — they are separate objects. This test file tests the TypeScript `drawHorse` module directly.
+
+**Important note on DOM handler ordering:** If color button click handlers produce unexpected results (e.g., the eval harness `drawHorse` intercepts clicks instead of the TypeScript module's `drawHorse`), add a `beforeEach` that calls `drawHorse.setupColorChooser()` to reset the onclick handlers to the TypeScript module's version.
 
 ```typescript
 // src/test/drawHorse/state.test.ts
