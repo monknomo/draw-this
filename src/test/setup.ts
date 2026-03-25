@@ -62,13 +62,27 @@ const scriptCode = readFileSync(scriptPath, 'utf-8')
 // Note: getDripSize is a method on tools.drips and hexToRgb, rgbToHex, standardizeColor
 // are methods on tools.bucket respectively — they are accessed via __tools.drips.getDripSize()
 // and __tools.bucket.hexToRgb() etc. in tests, not as standalone globals.
-eval(scriptCode + `
+try {
+  eval(scriptCode + `
 ;globalThis.__tools = tools;
 globalThis.__drawHorse = drawHorse;
 globalThis.__playSound = playSound;
 globalThis.__pauseSound = pauseSound;
 `)
+} catch (error) {
+  console.error('Error evaluating script.js:', error)
+  throw error
+}
 
 // Fire window.onload to run drawHorse initialization sequence:
 // setupColorChooser → canvas sizing → ctx assignment → resize → addListeners → setupStamps
-window.dispatchEvent(new Event('load'))
+try {
+  // Manually call the onload handler since dispatchEvent doesn't trigger property-based handlers
+  const onloadEvent = new Event('load', { bubbles: false, cancelable: true })
+  if (window.onload) {
+    window.onload(onloadEvent as any)
+  }
+} catch (error) {
+  console.error('Error firing window.onload:', error)
+  throw error
+}
