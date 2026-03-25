@@ -83,31 +83,34 @@ describe('canvas draw calls', () => {
   })
 
   describe('stamp (AC1.4)', () => {
-    it.skip('draw() calls ctx.drawImage', async () => {
-      // stamp.draw() is async and fires drawImage in img.onload.
-      // jsdom doesn't properly load base64 data URIs for images, so img.onload never fires.
-      // This behavior is verified in Phase 4 import-based tests.
-      const canvas = document.getElementById('drawHere') as HTMLCanvasElement
-      __drawHorse.currentTool = __tools.stamp
-      // Ensure a stamp is selected (setupStamps runs during onload)
-      if (!__drawHorse.selectedStamp) {
-        const stampChoices = document.querySelectorAll<HTMLElement>('#stampchooser button')
-        if (stampChoices.length > 0) {
-          stampChoices[0].dispatchEvent(new MouseEvent('click', { bubbles: true }))
+    it('draw() calls ctx.drawImage', async () => {
+      // jsdom doesn't fire img.onload for base64 data URIs. We stub Image so its
+      // src setter fires onload in the next microtask — matching real browser async
+      // behavior and giving stamp.draw() time to assign the onload handler first.
+      class AsyncImage {
+        width: number; height: number; onload: (() => void) | null = null
+        private _src = ''
+        constructor(w = 0, h = 0) { this.width = w; this.height = h }
+        get src() { return this._src }
+        set src(value: string) {
+          this._src = value
+          Promise.resolve().then(() => this.onload?.())
         }
       }
+      vi.stubGlobal('Image', AsyncImage)
+
+      const canvas = document.getElementById('drawHere') as HTMLCanvasElement
+      __drawHorse.currentTool = __tools.stamp
+      // mockImplementation prevents vitest-canvas-mock from throwing on AsyncImage argument
+      const drawImageSpy = vi.spyOn(ctx, 'drawImage').mockImplementation(() => {})
       const event = new MouseEvent('mousedown', { clientX: 100, clientY: 100 })
-      Object.defineProperty(event, 'target', {
-        value: canvas,
-        enumerable: true,
-      })
+      Object.defineProperty(event, 'target', { value: canvas, enumerable: true })
       __tools.stamp.draw(event)
-      // stamp.draw() fires drawImage in img.onload — give the microtask/timeout a tick
-      await new Promise(resolve => setTimeout(resolve, 50))
-      const drawCalls = ctx.__getDrawCalls()
-      const allEvents = (ctx as any)._events || []
-      const allCalls = [...drawCalls, ...allEvents]
-      expect(allCalls.some((c: any) => c.type === 'drawImage')).toBe(true)
+      await Promise.resolve() // let the microtask queue drain so onload fires
+
+      expect(drawImageSpy).toHaveBeenCalled()
+
+      vi.unstubAllGlobals()
     })
   })
 
