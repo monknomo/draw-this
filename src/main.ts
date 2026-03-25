@@ -1,5 +1,23 @@
 // src/main.ts
 import { drawHorse } from './drawHorse'
+import { tools } from './tools/index'
+import { playSound, pauseSound } from './sounds'
+
+// Expose globals for compatibility with baseline tests and eval harness
+declare global {
+  var tools: any
+  var drawHorse: any
+  var playSound: any
+  var pauseSound: any
+}
+
+globalThis.tools = tools as any
+globalThis.drawHorse = drawHorse as any
+globalThis.playSound = playSound as any
+globalThis.pauseSound = pauseSound as any
+
+// Initialize drawHorse.currentTool after circular dependency is resolved
+drawHorse.currentTool = tools.pencil
 
 window.onload = (_event) => {
   // Set up color choice click handlers

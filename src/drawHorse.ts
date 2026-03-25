@@ -44,7 +44,7 @@ export const drawHorse: DrawHorseContext & {
   // Known bug preserved: selectedColor appears twice in script.js (lines 472 and 478).
   // JavaScript uses the last definition; TypeScript only allows one — behavior is identical.
   selectedColor: 'black',
-  currentTool: tools.pencil,
+  currentTool: undefined as unknown as Tool,  // set to tools.pencil in main.ts during initialization
   selectedStamp: undefined,
   undoStack: [],
   ctx: undefined as unknown as CanvasRenderingContext2D,  // set in window.onload
