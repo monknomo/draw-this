@@ -12,6 +12,7 @@ describe('undo (import-based)', () => {
     ctx.__clearDrawCalls()
     drawHorse.ctx = ctx
     drawHorse.undoStack = []
+    drawHorse.currentTool = tools.pencil
     // Ensure canvas has dimensions
     if (drawHorse.canvas.width === 0) {
       drawHorse.canvas.width = 100

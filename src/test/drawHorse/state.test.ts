@@ -1,5 +1,6 @@
 // src/test/drawHorse/state.test.ts
 import { drawHorse } from '../../drawHorse'
+import { tools } from '../../tools/index'
 
 describe('drawHorse state (import-based)', () => {
   let ctx: any
@@ -12,6 +13,7 @@ describe('drawHorse state (import-based)', () => {
     drawHorse.ctx = ctx
     drawHorse.undoStack = []
     drawHorse.selectedColor = 'black'
+    drawHorse.currentTool = tools.pencil
   })
 
   describe('AC1.7: endPosition() pushes to undoStack', () => {

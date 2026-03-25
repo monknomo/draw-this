@@ -5,11 +5,16 @@ import { playSound } from '../sounds'
 import {
   hexToRgb,
   rgbToHex,
+  standardizeColor,
   matchStartColor,
   colorPixel,
 } from './bucket-helpers'
 
-export const bucket: Tool = {
+export const bucket: Tool & {
+  hexToRgb: typeof hexToRgb
+  rgbToHex: typeof rgbToHex
+  standardizeColor: typeof standardizeColor
+} = {
   name: 'bucket',
   button: document.getElementById('bucket') as HTMLElement,
   drawsImmediately: true,
@@ -94,4 +99,8 @@ export const bucket: Tool = {
   },
 
   stopDrawing(_e) {},
+
+  hexToRgb,
+  rgbToHex,
+  standardizeColor,
 }

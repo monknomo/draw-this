@@ -90,7 +90,7 @@
       drawHorse.ctx.arc(
         drawHorse.pos.x,
         drawHorse.pos.y,
-        getDripSize(),
+        this.getDripSize(),
         0,
         Math.PI * 2,
         true
@@ -100,7 +100,8 @@
     },
     stopDrawing(_e) {
       pauseSound("drippingSound");
-    }
+    },
+    getDripSize
   };
 
   // src/tools/stamp.ts
@@ -261,9 +262,22 @@
   };
 
   // src/tools/bucket-helpers.ts
+  function hexToRgb(hex) {
+    const aRgbHex = hex.substring(1).match(/.{1,2}/g);
+    return [
+      parseInt(aRgbHex[0], 16),
+      parseInt(aRgbHex[1], 16),
+      parseInt(aRgbHex[2], 16)
+    ];
+  }
   function rgbToHex(r, g, b) {
     if (r > 255 || g > 255 || b > 255) throw "Invalid color component";
     return (r << 16 | g << 8 | b).toString(16);
+  }
+  function standardizeColor(str) {
+    const colorctx = document.createElement("canvas").getContext("2d");
+    colorctx.fillStyle = str;
+    return hexToRgb(colorctx.fillStyle);
   }
   function matchStartColor(pixelPos, colorLayer, startColor) {
     const r = colorLayer.data[pixelPos];
@@ -348,7 +362,10 @@
       console.log("finis");
     },
     stopDrawing(_e) {
-    }
+    },
+    hexToRgb,
+    rgbToHex,
+    standardizeColor
   };
 
   // src/tools/index.ts
@@ -416,7 +433,8 @@
     // Known bug preserved: selectedColor appears twice in script.js (lines 472 and 478).
     // JavaScript uses the last definition; TypeScript only allows one — behavior is identical.
     selectedColor: "black",
-    currentTool: tools.pencil,
+    currentTool: void 0,
+    // set to tools.pencil in main.ts during initialization
     selectedStamp: void 0,
     undoStack: [],
     ctx: void 0,
@@ -569,6 +587,11 @@
   };
 
   // src/main.ts
+  globalThis.tools = tools;
+  globalThis.drawHorse = drawHorse;
+  globalThis.playSound = playSound;
+  globalThis.pauseSound = pauseSound;
+  drawHorse.currentTool = tools.pencil;
   window.onload = (_event) => {
     drawHorse.setupColorChooser();
     drawHorse.canvasWidth = drawHorse.stretcher.offsetWidth;

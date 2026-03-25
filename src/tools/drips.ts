@@ -19,7 +19,7 @@ export function getDripSize(): number {
   return size
 }
 
-export const drips: Tool = {
+export const drips: Tool & { getDripSize: () => number } = {
   name: 'drips',
   button: document.getElementById('drips') as HTMLElement,
   drawsImmediately: false,
@@ -40,7 +40,7 @@ export const drips: Tool = {
     drawHorse.ctx.arc(
       drawHorse.pos.x,
       drawHorse.pos.y,
-      getDripSize(),
+      this.getDripSize(),
       0,
       Math.PI * 2,
       true
@@ -52,4 +52,6 @@ export const drips: Tool = {
   stopDrawing(_e) {
     pauseSound('drippingSound')
   },
+
+  getDripSize,
 }
