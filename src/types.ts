@@ -23,3 +23,17 @@ export interface Stamp {
   name: string
   url: string  // base64-encoded SVG with %%%% as fill color placeholder
 }
+
+// DrawHorseContext: the subset of drawHorse properties that tools reference.
+// Defined here so tools can import the type without importing the full drawHorse module.
+export interface DrawHorseContext {
+  ctx: CanvasRenderingContext2D
+  pos: { x: number; y: number }
+  selectedColor: string
+  selectedStamp: Stamp | undefined
+  undoStack: ImageData[]
+  setPosition: (e: MouseEvent | TouchEvent) => void
+  showColorSelectors: () => void
+  hideStampSelectors: () => void
+  showStampSelectors: () => void
+}
