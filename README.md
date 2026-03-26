@@ -1,6 +1,8 @@
 # draw-this
 
-An HTML5 canvas drawing toy. Pick a tool, pick a color, make a mess.
+A fun drawing toy aimed at kids and the young at heart. Its only purpose is to bring a smile to someone's face and to make amusing pictures.
+
+Pick a tool, pick a color, make a mess.
 
 ## Running
 
@@ -44,16 +46,16 @@ interface Tool {
 
 `drawHorse` is the event host — it registers all mouse and touch listeners once and routes them to whichever tool is currently active. Tools never register their own listeners.
 
+A few of the built-in tools:
+
 | Tool | What it does |
 |---|---|
 | `pencil` | Freehand stroke |
-| `drips` | Filled circles of random radius |
 | `stamp` | Drops a 50×50 colored SVG at the click point |
-| `bubbles` | Scatters 0–30 bubble SVGs around the click point |
-| `eraser` | Paints white strokes over everything |
 | `oops` | Pops the undo stack and restores the previous canvas state |
-| `nuke` | Clears everything |
-| `bucket` | Scanline flood fill (button hidden pending a color fix) |
+| `floodfill` | Scanline flood fill |
+
+More tools can be added without touching any event wiring. Each tool lives in its own file in `src/tools/` and is registered in `src/tools/index.ts` — that's it. The `Tool` interface enforces the contract, and `drawHorse` handles everything else.
 
 ### `drawHorse` and `DrawHorseContext`
 
