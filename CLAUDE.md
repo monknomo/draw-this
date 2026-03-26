@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-<!-- Last reviewed: 2026-03-24 -->
+<!-- Last reviewed: 2026-03-25 -->
 
 ## Project Overview
 
@@ -94,7 +94,7 @@ interface Tool {
 | `eraser` | false | true | `eraser.ts` | Same as pencil but `strokeStyle = "white"` |
 | `oops` | -- | false | `oops.ts` | Pops `undoStack`, restores `ImageData` |
 | `nuke` | -- | false | `nuke.ts` | `ctx.clearRect` entire canvas |
-| `bucket` | true | true | `bucket.ts` | Scanline flood fill; **button commented out in HTML** -- `colorPixel` hardcodes wrong color |
+| `bucket` | true | true | `bucket.ts` | Scanline flood fill with tolerance-based color matching; parses selected color via `cssColorToRgba()` |
 
 ### `drawHorse` object (`src/drawHorse.ts`)
 
@@ -151,7 +151,6 @@ Rendering: `base64 decode -> replaceAll("%%%%", "style='fill:COLOR;stroke:COLOR;
 
 ## Known Issues and Incomplete Work
 
-- **`bucket` tool** -- `colorPixel()` hardcodes `[100, 1, 2]` instead of parsing selected color; button hidden in HTML until fixed.
 - **Bubble images external** -- 3 SVG URLs still point to `cdn.glitch.global`.
 - **Eraser** -- draws white strokes; does not restore transparency; only "erases" against white backgrounds.
 - **Undo granularity** -- snapshot on mouse-up means multi-stroke drags between releases share one undo level. `nuke` does not push a snapshot, so it cannot be undone.

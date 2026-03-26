@@ -266,38 +266,33 @@
   };
 
   // src/tools/bucket-helpers.ts
-  function hexToRgb(hex) {
-    const aRgbHex = hex.substring(1).match(/.{1,2}/g);
-    return [
-      parseInt(aRgbHex[0], 16),
-      parseInt(aRgbHex[1], 16),
-      parseInt(aRgbHex[2], 16)
-    ];
+  function cssColorToRgba(cssColor) {
+    const canvas = document.createElement("canvas");
+    canvas.width = 1;
+    canvas.height = 1;
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, 1, 1);
+    ctx.fillStyle = cssColor;
+    ctx.fillRect(0, 0, 1, 1);
+    const d = ctx.getImageData(0, 0, 1, 1).data;
+    return [d[0], d[1], d[2], d[3]];
   }
-  function rgbToHex(r, g, b) {
-    if (r > 255 || g > 255 || b > 255) throw "Invalid color component";
-    return (r << 16 | g << 8 | b).toString(16);
+  function matchStartColorWithTolerance(data, pos, startColor, maxDiff) {
+    const a = data[pos + 3];
+    if (startColor[3] === 0) return a === 0;
+    if (a === 0) return false;
+    return Math.abs(data[pos] - startColor[0]) + Math.abs(data[pos + 1] - startColor[1]) + Math.abs(data[pos + 2] - startColor[2]) < maxDiff;
   }
-  function standardizeColor(str) {
-    const colorctx = document.createElement("canvas").getContext("2d");
-    colorctx.fillStyle = str;
-    return hexToRgb(colorctx.fillStyle);
-  }
-  function matchStartColor(pixelPos, colorLayer, startColor) {
-    const r = colorLayer.data[pixelPos];
-    const g = colorLayer.data[pixelPos + 1];
-    const b = colorLayer.data[pixelPos + 2];
-    return r === startColor[0] && g === startColor[1] && b === startColor[2];
-  }
-  function colorPixel(pixelPos, colorLayer, _fillColor) {
-    const color = [100, 1, 2];
-    colorLayer.data[pixelPos] = color[0];
-    colorLayer.data[pixelPos + 1] = color[1];
-    colorLayer.data[pixelPos + 2] = color[2];
-    colorLayer.data[pixelPos + 3] = 255;
+  function colorPixelRgba(data, pos, fillRgba) {
+    data[pos] = fillRgba[0];
+    data[pos + 1] = fillRgba[1];
+    data[pos + 2] = fillRgba[2];
+    data[pos + 3] = 255;
   }
 
   // src/tools/bucket.ts
+  var DEFAULT_TOLERANCE = 0.15;
+  var MATCH_MAX_DIFF = 255 * 3 * DEFAULT_TOLERANCE;
   var bucket = {
     name: "bucket",
     button: document.getElementById("bucket"),
@@ -309,67 +304,73 @@
       drawHorse.hideStampSelectors();
     },
     draw(e) {
-      console.log("start");
+      drawHorse.setPosition(e);
       const { ctx } = drawHorse;
       const { width, height } = ctx.canvas;
-      const outlineData = ctx.getImageData(0, 0, width, height);
-      ctx.clearRect(0, 0, width, height);
+      const x = Math.floor(drawHorse.pos.x);
+      const y = Math.floor(drawHorse.pos.y);
+      if (x < 0 || x >= width || y < 0 || y >= height) return;
       const imageData = ctx.getImageData(0, 0, width, height);
-      drawHorse.setPosition(e);
+      const data = imageData.data;
+      const pixelPos = (y * width + x) * 4;
       const startColor = [
-        outlineData.data[0],
-        outlineData.data[1],
-        outlineData.data[2]
+        data[pixelPos],
+        data[pixelPos + 1],
+        data[pixelPos + 2],
+        data[pixelPos + 3]
       ];
-      const startColorHex = "#" + ("000000" + rgbToHex(outlineData.data[0], outlineData.data[1], outlineData.data[2])).slice(-6);
-      void startColorHex;
-      const pixelStack = [[drawHorse.pos.x, drawHorse.pos.y]];
-      while (pixelStack.length) {
-        const newPos = pixelStack.pop();
-        let x = newPos[0];
-        let y = newPos[1];
-        let pixelPos = (y * width + x) * 4;
-        while (y-- >= 0 && matchStartColor(pixelPos, outlineData, startColor)) {
-          pixelPos -= width * 4;
+      const fillRgba = cssColorToRgba(drawHorse.selectedColor);
+      if (matchStartColorWithTolerance(data, pixelPos, fillRgba, 255 * 3 * 0.05)) return;
+      const stack = [[x, y]];
+      const visited = new Uint8Array(width * height);
+      while (stack.length > 0) {
+        const [currentX, currentY] = stack.pop();
+        const initialIndex = currentY * width + currentX;
+        if (visited[initialIndex] || !matchStartColorWithTolerance(data, initialIndex * 4, startColor, MATCH_MAX_DIFF)) continue;
+        let leftX = currentX;
+        while (leftX > 0 && matchStartColorWithTolerance(data, (currentY * width + leftX - 1) * 4, startColor, MATCH_MAX_DIFF)) {
+          leftX--;
         }
-        pixelPos += width * 4;
-        ++y;
-        let reachLeft = false;
-        let reachRight = false;
-        while (y++ < height - 1 && matchStartColor(pixelPos, outlineData, startColor)) {
-          colorPixel(pixelPos, imageData, drawHorse.selectedColor);
-          if (x > 0) {
-            if (matchStartColor(pixelPos - 4, outlineData, startColor)) {
-              if (!reachLeft) {
-                pixelStack.push([x - 1, y]);
-                reachLeft = true;
+        let rightX = currentX;
+        while (rightX < width - 1 && matchStartColorWithTolerance(data, (currentY * width + rightX + 1) * 4, startColor, MATCH_MAX_DIFF)) {
+          rightX++;
+        }
+        let spanAddedAbove = false;
+        let spanAddedBelow = false;
+        const aboveY = currentY - 1;
+        const belowY = currentY + 1;
+        for (let scanX = leftX; scanX <= rightX; scanX++) {
+          const index = currentY * width + scanX;
+          colorPixelRgba(data, index * 4, fillRgba);
+          visited[index] = 1;
+          if (aboveY >= 0) {
+            const aboveIndex = aboveY * width + scanX;
+            if (!visited[aboveIndex] && matchStartColorWithTolerance(data, aboveIndex * 4, startColor, MATCH_MAX_DIFF)) {
+              if (!spanAddedAbove) {
+                stack.push([scanX, aboveY]);
+                spanAddedAbove = true;
               }
-            } else if (reachLeft) {
-              reachLeft = false;
+            } else {
+              spanAddedAbove = false;
             }
           }
-          if (x < width - 1) {
-            if (matchStartColor(pixelPos + 4, imageData, startColor)) {
-              if (!reachRight) {
-                pixelStack.push([x + 1, y]);
-                reachRight = true;
+          if (belowY < height) {
+            const belowIndex = belowY * width + scanX;
+            if (!visited[belowIndex] && matchStartColorWithTolerance(data, belowIndex * 4, startColor, MATCH_MAX_DIFF)) {
+              if (!spanAddedBelow) {
+                stack.push([scanX, belowY]);
+                spanAddedBelow = true;
               }
-            } else if (reachRight) {
-              reachRight = false;
+            } else {
+              spanAddedBelow = false;
             }
           }
-          pixelPos += width * 4;
         }
       }
       ctx.putImageData(imageData, 0, 0);
-      ctx.putImageData(outlineData, 0, 0);
-      console.log("finis");
     },
     stopDrawing(_e) {
-    },
-    hexToRgb,
-    rgbToHex,
-    standardizeColor
+    }
   };
 
   // src/tools/index.ts
