@@ -97,7 +97,7 @@
                width="30em"
                draggable="false"
                max-height="40em"
-               src="https://cdn.glitch.global/ecc7c6c7-2450-49b5-b5e7-94175cb9ac28/bubble3.svg?v=1652888653363"/>
+               src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUyIiByPSI0MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJibGFjayIgc3Ryb2tlLXdpZHRoPSI1Ii8+PGVsbGlwc2UgY3g9IjM2IiBjeT0iMjgiIHJ4PSIxMSIgcnk9IjYiIHRyYW5zZm9ybT0icm90YXRlKC0zNSAzNiAyOCkiIGZpbGw9ImJsYWNrIi8+PC9zdmc+"/>
         </button>
         <!--<button id="bucket" class="control">
           bucket
@@ -144,5 +144,7 @@
       <audio id="tornadoSound" src="assets/sounds/tornado-noise.mp3"></audio>
 
     </footer>
+    <!-- dev live-reload (EventSource fails silently when not running dev server) -->
+    <script>new EventSource('/_esbuild').addEventListener('change', () => location.reload())</script>
   </body>
 </html>
