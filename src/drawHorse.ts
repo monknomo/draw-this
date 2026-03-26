@@ -141,6 +141,12 @@ export const drawHorse: DrawHorseContext & {
     drawHorse.canvas.addEventListener('mouseup', function (e) {
       drawHorse.endPosition(e)
     })
+    drawHorse.canvas.addEventListener('mouseleave', function (e) {
+      drawHorse.currentTool.stopDrawing(e)
+    })
+    drawHorse.canvas.addEventListener('mouseenter', function (e) {
+      drawHorse.beginPosition(e)
+    })
 
     drawHorse.canvas.addEventListener('touchmove', drawHorse.draw)
     drawHorse.canvas.addEventListener('touchstart', function (e) {
