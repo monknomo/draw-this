@@ -3,12 +3,17 @@ import type { Tool, ToolSettings } from '../types'
 import { drawHorse } from '../drawHorse'
 import { playSound } from '../sounds'
 
-const BUBBLE_URL_1 =
-  'https://cdn.glitch.global/ecc7c6c7-2450-49b5-b5e7-94175cb9ac28/bubble.svg?v=1652888646403'
-const BUBBLE_URL_2 =
-  'https://cdn.glitch.global/ecc7c6c7-2450-49b5-b5e7-94175cb9ac28/bubble2.svg?v=1652888650037'
-const BUBBLE_URL_3 =
-  'https://cdn.glitch.global/ecc7c6c7-2450-49b5-b5e7-94175cb9ac28/bubble3.svg?v=1652888653363'
+// Bubble SVGs: circle+highlight design with %%%% color placeholder (upper-left, upper-right, top-center)
+const BUBBLE_BASE64_1 =
+  'PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUyIiByPSI0MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIlJSUlIiBzdHJva2Utd2lkdGg9IjUiLz48ZWxsaXBzZSBjeD0iMzYiIGN5PSIyOCIgcng9IjExIiByeT0iNiIgdHJhbnNmb3JtPSJyb3RhdGUoLTM1IDM2IDI4KSIgZmlsbD0iJSUlJSIvPjwvc3ZnPg=='
+const BUBBLE_BASE64_2 =
+  'PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUyIiByPSI0MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIlJSUlIiBzdHJva2Utd2lkdGg9IjUiLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSIyOCIgcng9IjExIiByeT0iNiIgdHJhbnNmb3JtPSJyb3RhdGUoMzUgNjQgMjgpIiBmaWxsPSIlJSUlIi8+PC9zdmc+'
+const BUBBLE_BASE64_3 =
+  'PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUyIiByPSI0MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIlJSUlIiBzdHJva2Utd2lkdGg9IjUiLz48ZWxsaXBzZSBjeD0iNTAiIGN5PSIyMCIgcng9IjEyIiByeT0iNiIgdHJhbnNmb3JtPSJyb3RhdGUoLTEwIDUwIDIwKSIgZmlsbD0iJSUlJSIvPjwvc3ZnPg=='
+
+export function colorizeBubbleSvg(base64: string, color: string): string {
+  return window.btoa(window.atob(base64).replaceAll('%%%%', color))
+}
 
 const settings: ToolSettings = {
   size: 35,
@@ -34,12 +39,13 @@ export const bubbles: Tool = {
     for (let i = 0; i < totalBubbles; i++) {
       const img = new Image(settings.size, settings.size)
       const bubbleChoice = Math.random()
-      img.src =
+      const base64 =
         bubbleChoice < 0.33
-          ? BUBBLE_URL_1
+          ? BUBBLE_BASE64_1
           : bubbleChoice < 0.5
-          ? BUBBLE_URL_2
-          : BUBBLE_URL_3
+          ? BUBBLE_BASE64_2
+          : BUBBLE_BASE64_3
+      img.src = 'data:image/svg+xml;base64,' + colorizeBubbleSvg(base64, drawHorse.selectedColor)
 
       const positive = Math.floor(Math.random() * 2) % 2 === 0 ? -1 : 1
       const xOffset = positive * Math.floor(Math.random() * (i * settings.size!))

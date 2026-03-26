@@ -2,7 +2,9 @@
   "name": "draw-this",
   "private": true,
   "scripts": {
+    "dev": "esbuild src/main.ts --bundle --format=iife --target=es2020 --outfile=script.js --servedir=. --serve=3000",
     "build": "esbuild src/main.ts --bundle --format=iife --target=es2020 --outfile=script.js",
+    "build:pages": "mkdir -p gh-pages && esbuild src/main.ts --bundle --format=iife --target=es2020 --minify --outfile=gh-pages/script.js && cp index.html style.css gh-pages/ && cp -r assets gh-pages/",
     "build:min": "esbuild src/main.ts --bundle --format=iife --target=es2020 --minify --outfile=script.js",
     "watch": "esbuild src/main.ts --bundle --format=iife --target=es2020 --outfile=script.js --watch",
     "typecheck": "tsc --noEmit",
