@@ -291,7 +291,7 @@
   }
 
   // src/tools/bucket.ts
-  var DEFAULT_TOLERANCE = 0.5;
+  var DEFAULT_TOLERANCE = 0.75;
   var MATCH_MAX_DIFF = 255 * 3 * DEFAULT_TOLERANCE;
   var bucket = {
     name: "bucket",
