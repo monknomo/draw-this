@@ -8,7 +8,7 @@ import {
   colorPixelRgba,
 } from './bucket-helpers'
 
-const DEFAULT_TOLERANCE = 0.30
+const DEFAULT_TOLERANCE = 0.50
 const MATCH_MAX_DIFF = 255 * 3 * DEFAULT_TOLERANCE
 
 export const bucket: Tool = {
