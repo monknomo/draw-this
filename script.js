@@ -596,6 +596,15 @@
     }
   };
 
+  // src/save.ts
+  function saveCanvas(canvas) {
+    const dataUrl = canvas.toDataURL("image/jpeg", 0.9);
+    const a = document.createElement("a");
+    a.href = dataUrl;
+    a.download = `screenshot-${Date.now()}.jpg`;
+    a.click();
+  }
+
   // src/main.ts
   globalThis.tools = tools;
   globalThis.drawHorse = drawHorse;
@@ -621,5 +630,9 @@
     drawHorse.addListeners();
     drawHorse.setupStamps();
     drawHorse.setupTools();
+    document.getElementById("screenshot").addEventListener(
+      "click",
+      () => saveCanvas(drawHorse.ctx.canvas)
+    );
   };
 })();
