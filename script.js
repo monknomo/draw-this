@@ -461,14 +461,14 @@
       }
     },
     beginPosition(e) {
+      drawHorse.undoStack.push(
+        drawHorse.ctx.getImageData(0, 0, drawHorse.ctx.canvas.width, drawHorse.ctx.canvas.height)
+      );
       drawHorse.setPosition(e);
     },
     endPosition(e) {
       drawHorse.currentTool.stopDrawing(e);
       drawHorse.setPosition(e);
-      drawHorse.undoStack.push(
-        drawHorse.ctx.getImageData(0, 0, drawHorse.ctx.canvas.width, drawHorse.ctx.canvas.height)
-      );
     },
     draw(e) {
       const me = e;

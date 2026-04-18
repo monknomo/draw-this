@@ -46,6 +46,7 @@ div#stretcher {
   flex:9;
   background-color:white;
   position: relative;
+  margin-right: 0.5em;
 }
 
 button.colorChoice {

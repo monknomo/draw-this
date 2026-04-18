@@ -21,10 +21,14 @@ describe('undo (import-based)', () => {
   })
 
   it('AC1.6: oops.onclick() pops undoStack and calls ctx.putImageData', () => {
-    // Push a snapshot first
-    const event = new MouseEvent('mouseup', { bubbles: true })
+    // Push a snapshot via beginPosition (as happens before a real stroke)
+    if (drawHorse.canvas.width === 0) {
+      drawHorse.canvas.width = 100
+      drawHorse.canvas.height = 100
+    }
+    const event = new MouseEvent('mousedown', { bubbles: true })
     Object.defineProperty(event, 'target', { value: drawHorse.canvas, enumerable: true })
-    drawHorse.endPosition(event)
+    drawHorse.beginPosition(event)
     expect(drawHorse.undoStack.length).toBe(1)
 
     // Spy on putImageData to verify it was called

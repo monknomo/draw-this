@@ -16,18 +16,17 @@ describe('drawHorse state (import-based)', () => {
     drawHorse.currentTool = tools.pencil
   })
 
-  describe('AC1.7: endPosition() pushes to undoStack', () => {
-    it('pushes an ImageData snapshot after each call', () => {
+  describe('AC1.7: beginPosition() pushes to undoStack', () => {
+    it('pushes an ImageData snapshot before each stroke', () => {
       // Ensure canvas has dimensions so getImageData doesn't fail
       if (drawHorse.canvas.width === 0) {
         drawHorse.canvas.width = 100
         drawHorse.canvas.height = 100
       }
       expect(drawHorse.undoStack.length).toBe(0)
-      // Create a mock event with target pointing to canvas
-      const event = new MouseEvent('mouseup')
+      const event = new MouseEvent('mousedown')
       Object.defineProperty(event, 'target', { value: drawHorse.canvas, enumerable: true })
-      drawHorse.endPosition(event)
+      drawHorse.beginPosition(event)
       expect(drawHorse.undoStack.length).toBe(1)
     })
   })
