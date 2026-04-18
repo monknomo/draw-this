@@ -2,6 +2,7 @@
 import { drawHorse } from './drawHorse'
 import { tools } from './tools/index'
 import { playSound, pauseSound } from './sounds'
+import { saveCanvas } from './save'
 
 // Expose globals for compatibility with baseline tests and eval harness
 declare global {
@@ -52,4 +53,9 @@ window.onload = (_event) => {
 
   // Set up tool button click handlers (no-op in original, preserved)
   drawHorse.setupTools()
+
+  // Wire screenshot button
+  document.getElementById('screenshot')!.addEventListener('click', () =>
+    saveCanvas(drawHorse.ctx.canvas)
+  )
 }

@@ -46,6 +46,7 @@ document.body.innerHTML = `
     <button id="oops" class="control tool"></button>
     <button id="nuke" class="control tool"></button>
     <button id="bucket" class="control tool"></button>
+    <button id="screenshot" class="control"></button>
   </div>
 `
 

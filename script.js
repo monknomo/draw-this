@@ -489,6 +489,8 @@
         "style",
         `width:${drawHorse.canvasWidth}px;height:${drawHorse.canvasHeight}px;`
       );
+      drawHorse.ctx.fillStyle = "white";
+      drawHorse.ctx.fillRect(0, 0, drawHorse.ctx.canvas.width, drawHorse.ctx.canvas.height);
     },
     addListeners() {
       window.addEventListener("resize", drawHorse.resize);
@@ -596,6 +598,17 @@
     }
   };
 
+  // src/save.ts
+  function saveCanvas(canvas) {
+    const dataUrl = canvas.toDataURL("image/jpeg", 0.9);
+    const a = document.createElement("a");
+    a.href = dataUrl;
+    a.download = `screenshot-${Date.now()}.jpg`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+
   // src/main.ts
   globalThis.tools = tools;
   globalThis.drawHorse = drawHorse;
@@ -621,5 +634,9 @@
     drawHorse.addListeners();
     drawHorse.setupStamps();
     drawHorse.setupTools();
+    document.getElementById("screenshot").addEventListener(
+      "click",
+      () => saveCanvas(drawHorse.ctx.canvas)
+    );
   };
 })();

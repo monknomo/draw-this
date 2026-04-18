@@ -21,15 +21,20 @@ h1 {
 
 div#controls {
   width:10%;
-  max-width: 80px;
+  max-width: 5em;
   flex:1;
   float:left;
 }
 
 button.control {
   background-color: #FFF483;
-  width: "100%";
-  max-width: 80px;
+  width: 100%;
+  max-width: 5em;
+}
+
+button.control img {
+  width: 2.5em;
+  height: auto;
 }
 
 button.selectedControl {
