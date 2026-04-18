@@ -489,6 +489,8 @@
         "style",
         `width:${drawHorse.canvasWidth}px;height:${drawHorse.canvasHeight}px;`
       );
+      drawHorse.ctx.fillStyle = "white";
+      drawHorse.ctx.fillRect(0, 0, drawHorse.ctx.canvas.width, drawHorse.ctx.canvas.height);
     },
     addListeners() {
       window.addEventListener("resize", drawHorse.resize);

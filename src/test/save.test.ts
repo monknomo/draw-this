@@ -9,7 +9,7 @@ describe('saveCanvas', () => {
     const clickSpy = vi.spyOn(anchor, 'click').mockImplementation(() => {})
     const createElementSpy = vi
       .spyOn(document, 'createElement')
-      .mockReturnValueOnce(anchor)
+      .mockReturnValueOnce(anchor as any)
 
     saveCanvas(canvas)
 
