@@ -19,11 +19,76 @@ h1 {
   display:flex;
 }
 
-div#controls {
-  width:10%;
-  max-width: 5em;
-  flex:1;
-  float:left;
+#main {
+  display: flex;
+  flex-direction: column;
+}
+
+#topbar {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.divider {
+  width: 0.1em;
+  background-color: #333;
+  align-self: stretch;
+  margin: 0 0.3em;
+}
+
+#body {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+}
+
+#sidebar {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+}
+
+#colors-col {
+  display: flex;
+  flex-direction: column;
+}
+
+#category-col {
+  display: flex;
+  flex-direction: column;
+}
+
+#top-tools {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+#top-tools .tool {
+  display: none;
+}
+
+#top-tools[data-active-category="pen"] .tool[data-category="pen"] { display: inline-block; }
+#top-tools[data-active-category="brush"] .tool[data-category="brush"] { display: inline-block; }
+#top-tools[data-active-category="toy"] .tool[data-category="toy"] { display: inline-block; }
+#top-tools[data-active-category="stamp"] .tool[data-category="stamp"] { display: inline-block; }
+#top-tools[data-active-category="eraser"] .tool[data-category="eraser"] { display: inline-block; }
+#top-tools[data-active-category="filter"] .tool[data-category="filter"] { display: inline-block; }
+#top-tools[data-active-category="bucket"] .tool[data-category="bucket"] { display: inline-block; }
+#top-tools[data-active-category="letter"] .tool[data-category="letter"] { display: inline-block; }
+
+button#rainbow {
+  background: linear-gradient(to bottom, red, orange, yellow, green, blue, violet);
+  color: white;
+  text-shadow: 0 0 2px black;
+}
+
+button#size-increase,
+button#size-decrease {
+  background-color: #FFF483;
+  font-size: 1.2em;
+  font-weight: bold;
 }
 
 button.control {
