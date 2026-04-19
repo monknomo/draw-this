@@ -4,15 +4,16 @@ https://paletton.com/#uid=34X0u0kf-N74UZ9aBU5jPEnnIvB
 
 body {
   font-family: helvetica, arial, sans-serif;
-  margin: 2em;
+  margin: 0.25em;
   background-color: orchid;
 }
 
 h1 {
   font-style: italic;
   color: #B0F27D;
-  font-size:large;
-  padding: 0 0 px;
+  font-size: large;
+  margin: 0;
+  padding: 0;
 }
 
 .row {
@@ -60,6 +61,11 @@ h1 {
 #category-col {
   display: flex;
   flex-direction: column;
+}
+
+#category-col img {
+  width: 1.5em;
+  height: auto;
 }
 
 #standard-tools {
