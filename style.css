@@ -2,10 +2,18 @@
 https://paletton.com/#uid=34X0u0kf-N74UZ9aBU5jPEnnIvB
 */
 
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+
 body {
   font-family: helvetica, arial, sans-serif;
   margin: 0.25em;
   background-color: orchid;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
 }
 
 h1 {
@@ -23,6 +31,8 @@ h1 {
 #main {
   display: flex;
   flex-direction: column;
+  flex: 1;
+  min-height: 0;
 }
 
 #topbar {
@@ -43,6 +53,7 @@ h1 {
   display: flex;
   flex-direction: row;
   flex: 1;
+  min-height: 0;
 }
 
 #sidebar {
@@ -63,10 +74,6 @@ h1 {
   flex-direction: column;
 }
 
-#category-col img {
-  width: 1.5em;
-  height: auto;
-}
 
 #standard-tools {
   display: flex;
@@ -82,6 +89,16 @@ h1 {
 
 #top-tools .tool {
   display: none;
+}
+
+#stampchooser {
+  display: none;
+  align-items: center;
+  margin-left: 1em;
+}
+
+#top-tools[data-active-category="stamp"] ~ #stampchooser {
+  display: flex;
 }
 
 #top-tools[data-active-category="pen"] .tool[data-category="pen"] { display: inline-block; }
@@ -111,13 +128,14 @@ button#size-decrease {
 
 button.control {
   background-color: #FFF483;
-  width: 100%;
-  max-width: 5em;
+  width: 5em;
 }
 
 button.control img {
+  display: block;
   width: 2.5em;
   height: auto;
+  margin: 0 auto;
 }
 
 button.selectedControl {

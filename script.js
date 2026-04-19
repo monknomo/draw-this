@@ -429,6 +429,18 @@
   };
 
   // src/drawHorse.ts
+  var noopTool = {
+    name: "noop",
+    button: document.createElement("button"),
+    selectable: false,
+    drawsImmediately: false,
+    onclick: () => {
+    },
+    draw: () => {
+    },
+    stopDrawing: () => {
+    }
+  };
   var drawHorse = {
     header: document.getElementById("header"),
     stretcher: document.getElementById("stretcher"),
@@ -516,8 +528,15 @@
         btn.addEventListener("click", (e) => {
           const cat = e.currentTarget.dataset.category;
           const topTools = document.querySelector("#top-tools");
+          document.querySelectorAll(".tool").forEach((t) => t.classList.remove("selectedControl"));
           if (cat && topTools) {
             topTools.dataset.activeCategory = cat;
+            const firstTool = topTools.querySelector(`.tool[data-category="${cat}"]`);
+            if (firstTool) {
+              firstTool.click();
+            } else {
+              drawHorse.currentTool = noopTool;
+            }
           }
           document.querySelectorAll(".category").forEach(
             (b) => b.classList.remove("selectedControl")
@@ -598,12 +617,8 @@
       }
     },
     showStampSelectors() {
-      const stampchooser = document.getElementById("stampchooser");
-      stampchooser.style.display = "";
     },
     hideStampSelectors() {
-      const stampchooser = document.getElementById("stampchooser");
-      stampchooser.style.display = "none";
     },
     showColorSelectors() {
       const colorchooser = document.getElementById("colorchooser");
@@ -633,7 +648,7 @@
     drawHorse.ctx = drawHorse.canvas.getContext("2d");
     drawHorse.resize();
     drawHorse.addListeners();
-    document.querySelector('.category[data-category="pen"]')?.classList.add("selectedControl");
+    document.querySelector('.category[data-category="pen"]')?.click();
     drawHorse.setupStamps();
     drawHorse.setupTools();
     document.getElementById("screenshot").addEventListener(

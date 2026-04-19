@@ -3,6 +3,16 @@ import type { DrawHorseContext, Tool, Stamp } from './types'
 import { tools } from './tools/index'
 import { stamps } from './stamps'
 
+const noopTool: Tool = {
+  name: 'noop',
+  button: document.createElement('button'),
+  selectable: false,
+  drawsImmediately: false,
+  onclick: () => {},
+  draw: () => {},
+  stopDrawing: () => {},
+}
+
 // drawHorse is exported as a const object so tools can import it by reference.
 // The circular import (tools → drawHorse → tools) is safe because tools only
 // reference drawHorse inside method bodies, never at module initialization time.
@@ -133,8 +143,15 @@ export const drawHorse: DrawHorseContext & {
       btn.addEventListener('click', (e) => {
         const cat = (e.currentTarget as HTMLElement).dataset.category
         const topTools = document.querySelector('#top-tools') as HTMLElement | null
+        document.querySelectorAll('.tool').forEach(t => t.classList.remove('selectedControl'))
         if (cat && topTools) {
           topTools.dataset.activeCategory = cat
+          const firstTool = topTools.querySelector<HTMLElement>(`.tool[data-category="${cat}"]`)
+          if (firstTool) {
+            firstTool.click()
+          } else {
+            drawHorse.currentTool = noopTool
+          }
         }
         document.querySelectorAll('.category').forEach(b =>
           b.classList.remove('selectedControl')
@@ -230,13 +247,11 @@ export const drawHorse: DrawHorseContext & {
   },
 
   showStampSelectors() {
-    const stampchooser = document.getElementById('stampchooser')!
-    stampchooser.style.display = ''
+    // visibility is CSS-driven by #top-tools[data-active-category="stamp"] ~ #stampchooser
   },
 
   hideStampSelectors() {
-    const stampchooser = document.getElementById('stampchooser')!
-    stampchooser.style.display = 'none'
+    // visibility is CSS-driven by #top-tools[data-active-category="stamp"] ~ #stampchooser
   },
 
   showColorSelectors() {

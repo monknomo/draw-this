@@ -33,9 +33,8 @@ window.onload = (_event) => {
   // Register mouse and touch event listeners
   drawHorse.addListeners()
 
-  // Set default category to 'pen'
-  document.querySelector<HTMLElement>('.category[data-category="pen"]')
-    ?.classList.add('selectedControl')
+  // Select pen category and auto-select the pencil tool
+  document.querySelector<HTMLElement>('.category[data-category="pen"]')?.click()
 
   // Build stamp chooser UI
   drawHorse.setupStamps()
