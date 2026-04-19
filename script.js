@@ -81,6 +81,8 @@
   };
 
   // src/tools/drips.ts
+  var RAINBOW_COLORS2 = ["red", "orange", "yellow", "green", "blue", "violet", "purple"];
+  var rainbowIndex = 0;
   function getDripSize() {
     let size = 0;
     if (Math.random() < 0.5) {
@@ -109,7 +111,8 @@
     draw(e) {
       playSound("drippingSound");
       drawHorse.setPosition(e);
-      drawHorse.ctx.fillStyle = drawHorse.selectedColor;
+      const color = drawHorse.selectedColor === "rainbow" ? RAINBOW_COLORS2[rainbowIndex++ % RAINBOW_COLORS2.length] : drawHorse.selectedColor;
+      drawHorse.ctx.fillStyle = color;
       drawHorse.ctx.beginPath();
       drawHorse.ctx.arc(
         drawHorse.pos.x,

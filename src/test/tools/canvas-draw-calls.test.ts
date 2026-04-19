@@ -73,6 +73,44 @@ describe('canvas draw calls (import-based)', () => {
       expect(allCalls.some((c: any) => c.type === 'arc')).toBe(true)
       expect(allCalls.some((c: any) => c.type === 'fill')).toBe(true)
     })
+
+    it('draw() cycles through rainbow colors when selectedColor is rainbow', () => {
+      const RAINBOW_COLORS = ['red', 'orange', 'yellow', 'green', 'blue', 'violet', 'purple']
+      drawHorse.selectedColor = 'rainbow'
+      const seenColors: string[] = []
+      const origFillStyleDescriptor = Object.getOwnPropertyDescriptor(ctx, 'fillStyle')
+      Object.defineProperty(ctx, 'fillStyle', {
+        get() { return this._fillStyle },
+        set(v: string) {
+          this._fillStyle = v
+          seenColors.push(v)
+        },
+        configurable: true,
+      })
+      // Draw enough times to cycle through all colors twice
+      for (let i = 0; i < 14; i++) {
+        const event = new MouseEvent('mousemove', { clientX: 100 + i, clientY: 100 })
+        tools.drips.draw(event)
+      }
+      if (origFillStyleDescriptor) {
+        Object.defineProperty(ctx, 'fillStyle', origFillStyleDescriptor)
+      }
+      const uniqueSeen = [...new Set(seenColors.filter(c => RAINBOW_COLORS.includes(c)))]
+      expect(uniqueSeen).toHaveLength(RAINBOW_COLORS.length)
+    })
+
+    it('draw() uses selectedColor directly for non-rainbow colors', () => {
+      drawHorse.selectedColor = 'blue'
+      const seenColors: string[] = []
+      Object.defineProperty(ctx, 'fillStyle', {
+        get() { return this._fillStyle },
+        set(v: string) { this._fillStyle = v; seenColors.push(v) },
+        configurable: true,
+      })
+      const event = new MouseEvent('mousemove', { clientX: 100, clientY: 100 })
+      tools.drips.draw(event)
+      expect(seenColors.every(c => c === 'blue' || c === '#0000ff')).toBe(true)
+    })
   })
 
   describe('stamp (AC1.4)', () => {
