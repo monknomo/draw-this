@@ -21,7 +21,7 @@ export interface Tool {
 export interface Stamp {
   id: string
   name: string
-  url: string  // base64-encoded SVG with %%%% as fill color placeholder
+  url: string  // base64-encoded SVG with fill="url(#sc)" stroke="url(#sc)" on all paths; colorizeStamp() injects <defs> at runtime
 }
 
 // DrawHorseContext: the subset of drawHorse properties that tools reference.

@@ -131,6 +131,11 @@ button.control {
   width: 5em;
 }
 
+#header button.control {
+  width: auto;
+  flex-shrink: 0;
+}
+
 button.control img {
   display: block;
   width: 2.5em;
@@ -194,5 +199,9 @@ button#white{
 
 button#saddlebrown{
   background-color:saddlebrown;
+}
+
+button#rainbow{
+  background: linear-gradient(to bottom, red, orange, yellow, green, blue, pink, purple);
 }
 

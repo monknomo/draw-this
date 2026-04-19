@@ -2,6 +2,7 @@
 import type { DrawHorseContext, Tool, Stamp } from './types'
 import { tools } from './tools/index'
 import { stamps } from './stamps'
+import { colorizeStamp } from './tools/stamp/colorize'
 
 const noopTool: Tool = {
   name: 'noop',
@@ -215,14 +216,7 @@ export const drawHorse: DrawHorseContext & {
   setupStamps() {
     Object.entries(drawHorse.stamps).forEach(([_key, value]) => {
       const stampchooser = document.getElementById('stampchooser')!
-      const colorized = window.btoa(
-        window
-          .atob(value.url)
-          .replaceAll(
-            '%%%%',
-            ` style='fill:${drawHorse.selectedColor};stroke:${drawHorse.selectedColor};' `
-          )
-      )
+      const colorized = colorizeStamp(value.url, drawHorse.selectedColor)
       stampchooser.innerHTML +=
         `<button id='${value.id}' class='stampchoice'>` +
         `<img width='30px' max-width='30px' max-height='30px' ` +

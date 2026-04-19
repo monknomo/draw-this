@@ -2,7 +2,7 @@
 import type { Tool } from '../types'
 import { pencil } from './pencil'
 import { drips } from './drips'
-import { stamp } from './stamp'
+import { stamp } from './stamp/index'
 import { bubbles } from './bubbles'
 import { eraser } from './eraser'
 import { oops } from './oops'

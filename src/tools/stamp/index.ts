@@ -1,7 +1,8 @@
-// src/tools/stamp.ts
-import type { Tool } from '../types'
-import { drawHorse } from '../drawHorse'
-import { playSound } from '../sounds'
+// src/tools/stamp/index.ts
+import type { Tool } from '../../types'
+import { drawHorse } from '../../drawHorse'
+import { playSound } from '../../sounds'
+import { colorizeStamp } from './colorize'
 
 export const stamp: Tool = {
   name: 'stamp',
@@ -21,12 +22,7 @@ export const stamp: Tool = {
     const img = new Image(50, 50)
     img.src =
       'data:image/svg+xml;base64,' +
-      window.btoa(
-        window.atob(drawHorse.selectedStamp!.url).replaceAll(
-          '%%%%',
-          ` style='fill:${drawHorse.selectedColor};stroke:${drawHorse.selectedColor};' `
-        )
-      )
+      colorizeStamp(drawHorse.selectedStamp!.url, drawHorse.selectedColor)
     img.onload = function () {
       drawHorse.ctx.drawImage(img, drawHorse.pos.x - 25, drawHorse.pos.y - 25, 50, 50)
     }
