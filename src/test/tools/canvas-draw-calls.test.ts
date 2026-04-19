@@ -2,6 +2,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { tools } from '../../tools/index'
 import { drawHorse } from '../../drawHorse'
+import { getRainbowColorForY } from '../../tools/bubbles'
 
 describe('canvas draw calls (import-based)', () => {
   let ctx: any
@@ -169,6 +170,25 @@ describe('canvas draw calls (import-based)', () => {
       tools.pencil.draw(event)
       const strokeCalls = ctx.__getDrawCalls().filter((c: any) => c.type === 'stroke')
       expect(strokeCalls).toHaveLength(1)
+    })
+  })
+
+  describe('bubbles rainbow slice colors', () => {
+    it('getRainbowColorForY returns red at the bottom', () => {
+      expect(getRainbowColorForY(590, 600)).toBe('red')
+    })
+
+    it('getRainbowColorForY returns purple at the top', () => {
+      expect(getRainbowColorForY(10, 600)).toBe('purple')
+    })
+
+    it('getRainbowColorForY returns distinct colors across 7 slices', () => {
+      const height = 700
+      const sliceHeight = height / 7
+      const colors = Array.from({ length: 7 }, (_, i) =>
+        getRainbowColorForY(height - (i + 0.5) * sliceHeight, height)
+      )
+      expect(new Set(colors).size).toBe(7)
     })
   })
 

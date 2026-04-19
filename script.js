@@ -161,6 +161,12 @@
   };
 
   // src/tools/bubbles.ts
+  var RAINBOW_COLORS3 = ["red", "orange", "yellow", "green", "blue", "violet", "purple"];
+  function getRainbowColorForY(centerY, canvasHeight) {
+    const sliceHeight = canvasHeight / RAINBOW_COLORS3.length;
+    const sliceIndex = Math.floor((canvasHeight - centerY) / sliceHeight);
+    return RAINBOW_COLORS3[Math.max(0, Math.min(RAINBOW_COLORS3.length - 1, sliceIndex))];
+  }
   var BUBBLE_BASE64_1 = "PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUyIiByPSI0MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIlJSUlIiBzdHJva2Utd2lkdGg9IjUiLz48ZWxsaXBzZSBjeD0iMzYiIGN5PSIyOCIgcng9IjExIiByeT0iNiIgdHJhbnNmb3JtPSJyb3RhdGUoLTM1IDM2IDI4KSIgZmlsbD0iJSUlJSIvPjwvc3ZnPg==";
   var BUBBLE_BASE64_2 = "PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUyIiByPSI0MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIlJSUlIiBzdHJva2Utd2lkdGg9IjUiLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSIyOCIgcng9IjExIiByeT0iNiIgdHJhbnNmb3JtPSJyb3RhdGUoMzUgNjQgMjgpIiBmaWxsPSIlJSUlIi8+PC9zdmc+";
   var BUBBLE_BASE64_3 = "PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUyIiByPSI0MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIlJSUlIiBzdHJva2Utd2lkdGg9IjUiLz48ZWxsaXBzZSBjeD0iNTAiIGN5PSIyMCIgcng9IjEyIiByeT0iNiIgdHJhbnNmb3JtPSJyb3RhdGUoLTEwIDUwIDIwKSIgZmlsbD0iJSUlJSIvPjwvc3ZnPg==";
@@ -189,7 +195,6 @@
         const img = new Image(settings2.size, settings2.size);
         const bubbleChoice = Math.random();
         const base64 = bubbleChoice < 0.33 ? BUBBLE_BASE64_1 : bubbleChoice < 0.5 ? BUBBLE_BASE64_2 : BUBBLE_BASE64_3;
-        img.src = "data:image/svg+xml;base64," + colorizeBubbleSvg(base64, drawHorse.selectedColor);
         const positive = Math.floor(Math.random() * 2) % 2 === 0 ? -1 : 1;
         const xOffset = positive * Math.floor(Math.random() * (i * settings2.size));
         const yOffset = Math.floor(Math.random() * (i * settings2.size));
@@ -197,14 +202,13 @@
         const bubbleSize = Math.floor(
           settings2.size + bubbleSizeSign * Math.floor(Math.random() * settings2.sizeVariation)
         );
+        const drawX = drawHorse.pos.x - settings2.size / 2 + xOffset;
+        const drawY = drawHorse.pos.y - settings2.size / 2 - yOffset;
+        const bubbleCenterY = drawY + bubbleSize / 2;
+        const color = drawHorse.selectedColor === "rainbow" ? getRainbowColorForY(bubbleCenterY, drawHorse.ctx.canvas.height) : drawHorse.selectedColor;
+        img.src = "data:image/svg+xml;base64," + colorizeBubbleSvg(base64, color);
         img.onload = function() {
-          drawHorse.ctx.drawImage(
-            img,
-            drawHorse.pos.x - settings2.size / 2 + xOffset,
-            drawHorse.pos.y - settings2.size / 2 - yOffset,
-            bubbleSize,
-            bubbleSize
-          );
+          drawHorse.ctx.drawImage(img, drawX, drawY, bubbleSize, bubbleSize);
         };
       }
     },
