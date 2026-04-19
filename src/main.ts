@@ -26,9 +26,10 @@ window.onload = (_event) => {
 
   // Calculate initial canvas dimensions
   drawHorse.canvasWidth = drawHorse.stretcher.offsetWidth
+  const topbar = document.getElementById('topbar') as HTMLElement | null
   drawHorse.canvasHeight = Math.floor(
     0.95 *
-      (window.innerHeight - drawHorse.header.offsetHeight - drawHorse.colors.offsetHeight)
+      (window.innerHeight - drawHorse.header.offsetHeight - (topbar?.offsetHeight ?? 0))
   )
   document.body.style.margin = '0'
   drawHorse.canvas.style.width = String(drawHorse.stretcher.offsetWidth)
@@ -47,6 +48,10 @@ window.onload = (_event) => {
 
   // Register mouse and touch event listeners
   drawHorse.addListeners()
+
+  // Set default category to 'pen'
+  document.querySelector<HTMLElement>('.category[data-category="pen"]')
+    ?.classList.add('selectedControl')
 
   // Build stamp chooser UI
   drawHorse.setupStamps()

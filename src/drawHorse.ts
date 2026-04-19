@@ -89,9 +89,10 @@ export const drawHorse: DrawHorseContext & {
 
   resize() {
     drawHorse.canvasWidth = drawHorse.stretcher.offsetWidth
+    const topbar = document.getElementById('topbar') as HTMLElement | null
     drawHorse.canvasHeight = Math.floor(
       0.95 *
-        (window.innerHeight - drawHorse.header.offsetHeight - drawHorse.colors.offsetHeight)
+        (window.innerHeight - drawHorse.header.offsetHeight - (topbar?.offsetHeight ?? 0))
     )
     drawHorse.ctx.canvas.width = drawHorse.stretcher.offsetWidth
     drawHorse.ctx.canvas.height = drawHorse.canvasHeight
@@ -129,6 +130,20 @@ export const drawHorse: DrawHorseContext & {
       },
       false
     )
+
+    document.querySelectorAll('.category').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const cat = (e.currentTarget as HTMLElement).dataset.category
+        const topTools = document.querySelector('#top-tools') as HTMLElement | null
+        if (cat && topTools) {
+          topTools.dataset.activeCategory = cat
+        }
+        document.querySelectorAll('.category').forEach(b =>
+          b.classList.remove('selectedControl')
+        )
+        ;(e.currentTarget as HTMLElement).classList.add('selectedControl')
+      })
+    })
 
     drawHorse.canvas.addEventListener('mousemove', function (e) {
       if (!drawHorse.currentTool.drawsImmediately) drawHorse.draw(e)
