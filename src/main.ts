@@ -24,22 +24,6 @@ window.onload = (_event) => {
   // Set up color choice click handlers
   drawHorse.setupColorChooser()
 
-  // Calculate initial canvas dimensions
-  drawHorse.canvasWidth = drawHorse.stretcher.offsetWidth
-  const topbar = document.getElementById('topbar') as HTMLElement | null
-  drawHorse.canvasHeight = Math.floor(
-    0.95 *
-      (window.innerHeight - drawHorse.header.offsetHeight - (topbar?.offsetHeight ?? 0))
-  )
-  document.body.style.margin = '0'
-  drawHorse.canvas.style.width = String(drawHorse.stretcher.offsetWidth)
-  drawHorse.canvas.style.height = String(drawHorse.canvasHeight)
-  drawHorse.stretcher.style.height = drawHorse.canvasHeight + 'px'
-  drawHorse.stretcher.setAttribute(
-    'style',
-    `width:${drawHorse.canvasWidth}px;height:${drawHorse.canvasHeight}px;`
-  )
-
   // Assign canvas 2D context
   drawHorse.ctx = drawHorse.canvas.getContext('2d') as CanvasRenderingContext2D
 

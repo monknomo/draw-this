@@ -9,7 +9,6 @@ import { stamps } from './stamps'
 export const drawHorse: DrawHorseContext & {
   header: HTMLElement
   stretcher: HTMLElement
-  colors: HTMLElement
   canvas: HTMLCanvasElement
   ctx: CanvasRenderingContext2D
   currentTool: Tool
@@ -38,7 +37,6 @@ export const drawHorse: DrawHorseContext & {
 } = {
   header: document.getElementById('header') as HTMLElement,
   stretcher: document.getElementById('stretcher') as HTMLElement,
-  colors: document.getElementById('colors') as HTMLElement,
   canvas: document.getElementById('drawHere') as HTMLCanvasElement,
 
   // Known bug preserved: selectedColor appears twice in script.js (lines 472 and 478).
