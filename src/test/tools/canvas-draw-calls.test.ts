@@ -112,6 +112,28 @@ describe('canvas draw calls (import-based)', () => {
     })
   })
 
+  describe('pencil rainbow mode', () => {
+    it('draw() calls stroke 7 times when selectedColor is rainbow', () => {
+      drawHorse.selectedColor = 'rainbow'
+      drawHorse.pos = { x: 50, y: 50 }
+      ctx.__clearDrawCalls()
+      const event = new MouseEvent('mousemove', { clientX: 100, clientY: 100 })
+      tools.pencil.draw(event)
+      const strokeCalls = ctx.__getDrawCalls().filter((c: any) => c.type === 'stroke')
+      expect(strokeCalls).toHaveLength(7)
+    })
+
+    it('draw() calls stroke once for non-rainbow color', () => {
+      drawHorse.selectedColor = 'black'
+      drawHorse.pos = { x: 50, y: 50 }
+      ctx.__clearDrawCalls()
+      const event = new MouseEvent('mousemove', { clientX: 100, clientY: 100 })
+      tools.pencil.draw(event)
+      const strokeCalls = ctx.__getDrawCalls().filter((c: any) => c.type === 'stroke')
+      expect(strokeCalls).toHaveLength(1)
+    })
+  })
+
   describe('nuke (AC1.5)', () => {
     it('onclick() calls ctx.clearRect on the entire canvas', () => {
       tools.nuke.onclick(new MouseEvent('click'))
