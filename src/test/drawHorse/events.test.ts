@@ -1,4 +1,5 @@
 // src/test/drawHorse/events.test.ts
+import { describe, it, expect, beforeAll, beforeEach, vi } from 'vitest'
 import { drawHorse } from '../../drawHorse'
 import { tools } from '../../tools/index'
 
@@ -37,5 +38,28 @@ describe('drawHorse event handling', () => {
 
     expect(beginPositionSpy).toHaveBeenCalledOnce()
     beginPositionSpy.mockRestore()
+  })
+
+  it('clicking a selectable tool button switches currentTool and applies selectedControl class (AC4.1)', () => {
+    // Start with pencil as current tool
+    drawHorse.currentTool = tools.pencil
+    const pencilButton = document.getElementById('pencil') as HTMLElement
+    const dripsButton = document.getElementById('drips') as HTMLElement
+
+    // Ensure initial state: pencil is selected
+    pencilButton.classList.add('selectedControl')
+    expect(drawHorse.currentTool).toBe(tools.pencil)
+    expect(pencilButton.classList.contains('selectedControl')).toBe(true)
+    expect(dripsButton.classList.contains('selectedControl')).toBe(false)
+
+    // Click the drips button
+    dripsButton.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+
+    // Assert: currentTool switched to drips
+    expect(drawHorse.currentTool).toBe(tools.drips)
+    // Assert: drips button has selectedControl class
+    expect(dripsButton.classList.contains('selectedControl')).toBe(true)
+    // Assert: pencil button no longer has selectedControl class
+    expect(pencilButton.classList.contains('selectedControl')).toBe(false)
   })
 })

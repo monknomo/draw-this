@@ -24,21 +24,6 @@ window.onload = (_event) => {
   // Set up color choice click handlers
   drawHorse.setupColorChooser()
 
-  // Calculate initial canvas dimensions
-  drawHorse.canvasWidth = drawHorse.stretcher.offsetWidth
-  drawHorse.canvasHeight = Math.floor(
-    0.95 *
-      (window.innerHeight - drawHorse.header.offsetHeight - drawHorse.colors.offsetHeight)
-  )
-  document.body.style.margin = '0'
-  drawHorse.canvas.style.width = String(drawHorse.stretcher.offsetWidth)
-  drawHorse.canvas.style.height = String(drawHorse.canvasHeight)
-  drawHorse.stretcher.style.height = drawHorse.canvasHeight + 'px'
-  drawHorse.stretcher.setAttribute(
-    'style',
-    `width:${drawHorse.canvasWidth}px;height:${drawHorse.canvasHeight}px;`
-  )
-
   // Assign canvas 2D context
   drawHorse.ctx = drawHorse.canvas.getContext('2d') as CanvasRenderingContext2D
 
@@ -47,6 +32,9 @@ window.onload = (_event) => {
 
   // Register mouse and touch event listeners
   drawHorse.addListeners()
+
+  // Select pen category and auto-select the pencil tool
+  document.querySelector<HTMLElement>('.category[data-category="pen"]')?.click()
 
   // Build stamp chooser UI
   drawHorse.setupStamps()

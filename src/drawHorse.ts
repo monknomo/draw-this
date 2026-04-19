@@ -3,13 +3,22 @@ import type { DrawHorseContext, Tool, Stamp } from './types'
 import { tools } from './tools/index'
 import { stamps } from './stamps'
 
+const noopTool: Tool = {
+  name: 'noop',
+  button: document.createElement('button'),
+  selectable: false,
+  drawsImmediately: false,
+  onclick: () => {},
+  draw: () => {},
+  stopDrawing: () => {},
+}
+
 // drawHorse is exported as a const object so tools can import it by reference.
 // The circular import (tools → drawHorse → tools) is safe because tools only
 // reference drawHorse inside method bodies, never at module initialization time.
 export const drawHorse: DrawHorseContext & {
   header: HTMLElement
   stretcher: HTMLElement
-  colors: HTMLElement
   canvas: HTMLCanvasElement
   ctx: CanvasRenderingContext2D
   currentTool: Tool
@@ -38,7 +47,6 @@ export const drawHorse: DrawHorseContext & {
 } = {
   header: document.getElementById('header') as HTMLElement,
   stretcher: document.getElementById('stretcher') as HTMLElement,
-  colors: document.getElementById('colors') as HTMLElement,
   canvas: document.getElementById('drawHere') as HTMLCanvasElement,
 
   // Known bug preserved: selectedColor appears twice in script.js (lines 472 and 478).
@@ -89,9 +97,10 @@ export const drawHorse: DrawHorseContext & {
 
   resize() {
     drawHorse.canvasWidth = drawHorse.stretcher.offsetWidth
+    const topbar = document.getElementById('topbar') as HTMLElement | null
     drawHorse.canvasHeight = Math.floor(
       0.95 *
-        (window.innerHeight - drawHorse.header.offsetHeight - drawHorse.colors.offsetHeight)
+        (window.innerHeight - drawHorse.header.offsetHeight - (topbar?.offsetHeight ?? 0))
     )
     drawHorse.ctx.canvas.width = drawHorse.stretcher.offsetWidth
     drawHorse.ctx.canvas.height = drawHorse.canvasHeight
@@ -129,6 +138,27 @@ export const drawHorse: DrawHorseContext & {
       },
       false
     )
+
+    document.querySelectorAll('.category').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const cat = (e.currentTarget as HTMLElement).dataset.category
+        const topTools = document.querySelector('#top-tools') as HTMLElement | null
+        document.querySelectorAll('.tool').forEach(t => t.classList.remove('selectedControl'))
+        if (cat && topTools) {
+          topTools.dataset.activeCategory = cat
+          const firstTool = topTools.querySelector<HTMLElement>(`.tool[data-category="${cat}"]`)
+          if (firstTool) {
+            firstTool.click()
+          } else {
+            drawHorse.currentTool = noopTool
+          }
+        }
+        document.querySelectorAll('.category').forEach(b =>
+          b.classList.remove('selectedControl')
+        )
+        ;(e.currentTarget as HTMLElement).classList.add('selectedControl')
+      })
+    })
 
     drawHorse.canvas.addEventListener('mousemove', function (e) {
       if (!drawHorse.currentTool.drawsImmediately) drawHorse.draw(e)
@@ -217,13 +247,11 @@ export const drawHorse: DrawHorseContext & {
   },
 
   showStampSelectors() {
-    const stampchooser = document.getElementById('stampchooser')!
-    stampchooser.style.display = ''
+    // visibility is CSS-driven by #top-tools[data-active-category="stamp"] ~ #stampchooser
   },
 
   hideStampSelectors() {
-    const stampchooser = document.getElementById('stampchooser')!
-    stampchooser.style.display = 'none'
+    // visibility is CSS-driven by #top-tools[data-active-category="stamp"] ~ #stampchooser
   },
 
   showColorSelectors() {

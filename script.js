@@ -429,10 +429,21 @@
   };
 
   // src/drawHorse.ts
+  var noopTool = {
+    name: "noop",
+    button: document.createElement("button"),
+    selectable: false,
+    drawsImmediately: false,
+    onclick: () => {
+    },
+    draw: () => {
+    },
+    stopDrawing: () => {
+    }
+  };
   var drawHorse = {
     header: document.getElementById("header"),
     stretcher: document.getElementById("stretcher"),
-    colors: document.getElementById("colors"),
     canvas: document.getElementById("drawHere"),
     // Known bug preserved: selectedColor appears twice in script.js (lines 472 and 478).
     // JavaScript uses the last definition; TypeScript only allows one — behavior is identical.
@@ -479,8 +490,9 @@
     },
     resize() {
       drawHorse.canvasWidth = drawHorse.stretcher.offsetWidth;
+      const topbar = document.getElementById("topbar");
       drawHorse.canvasHeight = Math.floor(
-        0.95 * (window.innerHeight - drawHorse.header.offsetHeight - drawHorse.colors.offsetHeight)
+        0.95 * (window.innerHeight - drawHorse.header.offsetHeight - (topbar?.offsetHeight ?? 0))
       );
       drawHorse.ctx.canvas.width = drawHorse.stretcher.offsetWidth;
       drawHorse.ctx.canvas.height = drawHorse.canvasHeight;
@@ -512,6 +524,26 @@
         },
         false
       );
+      document.querySelectorAll(".category").forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+          const cat = e.currentTarget.dataset.category;
+          const topTools = document.querySelector("#top-tools");
+          document.querySelectorAll(".tool").forEach((t) => t.classList.remove("selectedControl"));
+          if (cat && topTools) {
+            topTools.dataset.activeCategory = cat;
+            const firstTool = topTools.querySelector(`.tool[data-category="${cat}"]`);
+            if (firstTool) {
+              firstTool.click();
+            } else {
+              drawHorse.currentTool = noopTool;
+            }
+          }
+          document.querySelectorAll(".category").forEach(
+            (b) => b.classList.remove("selectedControl")
+          );
+          e.currentTarget.classList.add("selectedControl");
+        });
+      });
       drawHorse.canvas.addEventListener("mousemove", function(e) {
         if (!drawHorse.currentTool.drawsImmediately) drawHorse.draw(e);
       });
@@ -585,12 +617,8 @@
       }
     },
     showStampSelectors() {
-      const stampchooser = document.getElementById("stampchooser");
-      stampchooser.style.display = "";
     },
     hideStampSelectors() {
-      const stampchooser = document.getElementById("stampchooser");
-      stampchooser.style.display = "none";
     },
     showColorSelectors() {
       const colorchooser = document.getElementById("colorchooser");
@@ -617,21 +645,10 @@
   drawHorse.currentTool = tools.pencil;
   window.onload = (_event) => {
     drawHorse.setupColorChooser();
-    drawHorse.canvasWidth = drawHorse.stretcher.offsetWidth;
-    drawHorse.canvasHeight = Math.floor(
-      0.95 * (window.innerHeight - drawHorse.header.offsetHeight - drawHorse.colors.offsetHeight)
-    );
-    document.body.style.margin = "0";
-    drawHorse.canvas.style.width = String(drawHorse.stretcher.offsetWidth);
-    drawHorse.canvas.style.height = String(drawHorse.canvasHeight);
-    drawHorse.stretcher.style.height = drawHorse.canvasHeight + "px";
-    drawHorse.stretcher.setAttribute(
-      "style",
-      `width:${drawHorse.canvasWidth}px;height:${drawHorse.canvasHeight}px;`
-    );
     drawHorse.ctx = drawHorse.canvas.getContext("2d");
     drawHorse.resize();
     drawHorse.addListeners();
+    document.querySelector('.category[data-category="pen"]')?.click();
     drawHorse.setupStamps();
     drawHorse.setupTools();
     document.getElementById("screenshot").addEventListener(
