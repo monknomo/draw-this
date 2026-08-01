@@ -2,6 +2,7 @@
 import type { Tool } from '../types'
 import { drawHorse } from '../drawHorse'
 import { playSound, pauseSound } from '../sounds'
+import { SIZE_DEFAULT } from '../sizeControl'
 
 const RAINBOW_COLORS = ['red', 'orange', 'yellow', 'green', 'blue', 'violet', 'purple']
 let rainbowIndex = 0
@@ -43,10 +44,14 @@ export const drips: Tool & { getDripSize: () => number } = {
       : drawHorse.selectedColor
     drawHorse.ctx.fillStyle = color
     drawHorse.ctx.beginPath()
+    // Scale drip radius by brushSize / SIZE_DEFAULT so bigger size => bigger drips.
+    // getDripSize() provides the base random variation; the global size acts as a multiplier.
+    // At SIZE_DEFAULT (5) the multiplier is 1.0, preserving original feel at default.
+    const sizeMultiplier = drawHorse.brushSize / SIZE_DEFAULT
     drawHorse.ctx.arc(
       drawHorse.pos.x,
       drawHorse.pos.y,
-      this.getDripSize(),
+      this.getDripSize() * sizeMultiplier,
       0,
       Math.PI * 2,
       true

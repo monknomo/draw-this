@@ -27,7 +27,7 @@ export const eraser: Tool = {
   draw(e) {
     playSound('eraserSound')
     drawHorse.ctx.beginPath()
-    drawHorse.ctx.lineWidth = 5
+    drawHorse.ctx.lineWidth = drawHorse.brushSize
     drawHorse.ctx.lineCap = 'round'
     drawHorse.ctx.strokeStyle = 'white'  // Eraser is white-only (known limitation)
     drawHorse.ctx.moveTo(drawHorse.pos.x, drawHorse.pos.y)

@@ -3,6 +3,7 @@ import type { DrawHorseContext, Tool, Stamp } from './types'
 import { tools } from './tools/index'
 import { stamps } from './stamps'
 import { colorizeStamp } from './tools/stamp/colorize'
+import { SIZE_DEFAULT, nextSize } from './sizeControl'
 
 const noopTool: Tool = {
   name: 'noop',
@@ -31,6 +32,7 @@ export const drawHorse: DrawHorseContext & {
   canvasWidth: number
   canvasHeight: number
   stamps: Record<string, Stamp>
+  brushSize: number
   setPosition: (e: MouseEvent | TouchEvent) => void
   beginPosition: (e: MouseEvent | TouchEvent) => void
   endPosition: (e: MouseEvent | TouchEvent) => void
@@ -62,6 +64,7 @@ export const drawHorse: DrawHorseContext & {
   canvasWidth: 0,
   canvasHeight: 0,
   stamps,
+  brushSize: SIZE_DEFAULT,
 
   setPosition(e) {
     if (e.target === drawHorse.canvas) e.preventDefault()
@@ -134,11 +137,26 @@ export const drawHorse: DrawHorseContext & {
           }
           toolEl.classList.add('selectedControl')
           drawHorse.currentTool = tool
+          // Reset brush size to default on every tool change (no per-tool persistence).
+          drawHorse.brushSize = SIZE_DEFAULT
         }
         tool.onclick(e)
       },
       false
     )
+
+    const sizeIncreaseBtn = document.getElementById('size-increase')
+    const sizeDecreaseBtn = document.getElementById('size-decrease')
+    if (sizeIncreaseBtn) {
+      sizeIncreaseBtn.addEventListener('click', () => {
+        drawHorse.brushSize = nextSize(drawHorse.brushSize, 1)
+      })
+    }
+    if (sizeDecreaseBtn) {
+      sizeDecreaseBtn.addEventListener('click', () => {
+        drawHorse.brushSize = nextSize(drawHorse.brushSize, -1)
+      })
+    }
 
     document.querySelectorAll('.category').forEach(btn => {
       btn.addEventListener('click', (e) => {
