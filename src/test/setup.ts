@@ -28,6 +28,7 @@ document.body.innerHTML = `
       <button id="saddlebrown" class="colorChoice"></button>
       <button id="black" class="colorChoice"></button>
       <button id="white" class="colorChoice"></button>
+      <button id="rainbow" class="colorChoice">r</button>
     </div>
     <audio id="clickSound"></audio>
     <audio id="drippingSound"></audio>
@@ -37,16 +38,26 @@ document.body.innerHTML = `
     <audio id="oopsSound"></audio>
     <audio id="tornadoSound"></audio>
   </footer>
-  <div id="controls">
-    <button id="pencil" class="control tool"></button>
-    <button id="drips" class="control tool"></button>
-    <button id="bubbles" class="control tool"></button>
-    <button id="stamp" class="control tool"></button>
-    <button id="eraser" class="control tool"></button>
+  <div id="top-tools" data-active-category="pen">
+    <button id="pencil" class="control tool" data-category="pen"></button>
+    <button id="drips" class="control tool" data-category="brush"></button>
+    <button id="bubbles" class="control tool" data-category="toy"></button>
+    <button id="stamp" class="control tool" data-category="stamp"></button>
+    <button id="eraser" class="control tool" data-category="eraser"></button>
     <button id="oops" class="control tool"></button>
     <button id="nuke" class="control tool"></button>
-    <button id="bucket" class="control tool"></button>
+    <button id="bucket" class="control tool" data-category="bucket"></button>
     <button id="screenshot" class="control"></button>
+  </div>
+  <div id="category-col">
+    <button class="control category" data-category="pen">pen</button>
+    <button class="control category" data-category="brush">brush</button>
+    <button class="control category" data-category="toy">toy</button>
+    <button class="control category" data-category="stamp">stamp</button>
+    <button class="control category" data-category="eraser">eraser</button>
+    <button class="control category" data-category="filter">filter</button>
+    <button class="control category" data-category="bucket">bucket</button>
+    <button class="control category" data-category="letter">letter</button>
   </div>
 `
 
