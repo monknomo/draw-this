@@ -51,7 +51,7 @@
         const newY = drawHorse.pos.y;
         const angle = Math.atan2(newY - oldY, newX - oldX);
         const perpAngle = angle + Math.PI / 2;
-        const stripeWidth = settings.width ?? 1;
+        const stripeWidth = drawHorse.brushSize;
         const cosP = Math.cos(perpAngle);
         const sinP = Math.sin(perpAngle);
         RAINBOW_COLORS.forEach((color, i) => {
@@ -67,7 +67,7 @@
         return;
       }
       drawHorse.ctx.beginPath();
-      drawHorse.ctx.lineWidth = 5;
+      drawHorse.ctx.lineWidth = drawHorse.brushSize;
       drawHorse.ctx.lineCap = "round";
       drawHorse.ctx.strokeStyle = drawHorse.selectedColor;
       drawHorse.ctx.moveTo(drawHorse.pos.x, drawHorse.pos.y);
@@ -79,6 +79,21 @@
       pauseSound("pencilSound");
     }
   };
+
+  // src/sizeControl.ts
+  var SIZE_MIN = 1;
+  var SIZE_MAX = 50;
+  var SIZE_DEFAULT = 5;
+  var STEP_SCHEDULE = [
+    { threshold: 10, step: 1 },
+    { threshold: 20, step: 2 },
+    { threshold: Infinity, step: 5 }
+  ];
+  function nextSize(current, direction) {
+    const tier = STEP_SCHEDULE.find((t) => current < t.threshold);
+    const step = tier.step;
+    return Math.min(SIZE_MAX, Math.max(SIZE_MIN, current + direction * step));
+  }
 
   // src/tools/drips.ts
   var RAINBOW_COLORS2 = ["red", "orange", "yellow", "green", "blue", "violet", "purple"];
@@ -114,10 +129,11 @@
       const color = drawHorse.selectedColor === "rainbow" ? RAINBOW_COLORS2[rainbowIndex++ % RAINBOW_COLORS2.length] : drawHorse.selectedColor;
       drawHorse.ctx.fillStyle = color;
       drawHorse.ctx.beginPath();
+      const sizeMultiplier = drawHorse.brushSize / SIZE_DEFAULT;
       drawHorse.ctx.arc(
         drawHorse.pos.x,
         drawHorse.pos.y,
-        this.getDripSize(),
+        this.getDripSize() * sizeMultiplier,
         0,
         Math.PI * 2,
         true
@@ -170,10 +186,12 @@
     },
     draw(_e) {
       playSound("stampSound");
-      const img = new Image(50, 50);
+      const stampPx = drawHorse.brushSize * (50 / SIZE_DEFAULT);
+      const halfStamp = stampPx / 2;
+      const img = new Image(stampPx, stampPx);
       img.src = "data:image/svg+xml;base64," + colorizeStamp(drawHorse.selectedStamp.url, drawHorse.selectedColor);
       img.onload = function() {
-        drawHorse.ctx.drawImage(img, drawHorse.pos.x - 25, drawHorse.pos.y - 25, 50, 50);
+        drawHorse.ctx.drawImage(img, drawHorse.pos.x - halfStamp, drawHorse.pos.y - halfStamp, stampPx, stampPx);
       };
     },
     stopDrawing(_e) {
@@ -262,7 +280,7 @@
     draw(e) {
       playSound("eraserSound");
       drawHorse.ctx.beginPath();
-      drawHorse.ctx.lineWidth = 5;
+      drawHorse.ctx.lineWidth = drawHorse.brushSize;
       drawHorse.ctx.lineCap = "round";
       drawHorse.ctx.strokeStyle = "white";
       drawHorse.ctx.moveTo(drawHorse.pos.x, drawHorse.pos.y);
@@ -522,6 +540,7 @@
     canvasWidth: 0,
     canvasHeight: 0,
     stamps,
+    brushSize: SIZE_DEFAULT,
     setPosition(e) {
       if (e.target === drawHorse.canvas) e.preventDefault();
       const bcr = e.target.getBoundingClientRect();
@@ -582,11 +601,24 @@
             }
             toolEl.classList.add("selectedControl");
             drawHorse.currentTool = tool;
+            drawHorse.brushSize = SIZE_DEFAULT;
           }
           tool.onclick(e);
         },
         false
       );
+      const sizeIncreaseBtn = document.getElementById("size-increase");
+      const sizeDecreaseBtn = document.getElementById("size-decrease");
+      if (sizeIncreaseBtn) {
+        sizeIncreaseBtn.addEventListener("click", () => {
+          drawHorse.brushSize = nextSize(drawHorse.brushSize, 1);
+        });
+      }
+      if (sizeDecreaseBtn) {
+        sizeDecreaseBtn.addEventListener("click", () => {
+          drawHorse.brushSize = nextSize(drawHorse.brushSize, -1);
+        });
+      }
       document.querySelectorAll(".category").forEach((btn) => {
         btn.addEventListener("click", (e) => {
           const cat = e.currentTarget.dataset.category;

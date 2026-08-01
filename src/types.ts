@@ -32,6 +32,7 @@ export interface DrawHorseContext {
   selectedColor: string
   selectedStamp: Stamp | undefined
   undoStack: ImageData[]
+  brushSize: number
   setPosition: (e: MouseEvent | TouchEvent) => void
   showColorSelectors: () => void
   hideStampSelectors: () => void

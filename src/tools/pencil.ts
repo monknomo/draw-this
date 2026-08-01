@@ -38,7 +38,7 @@ export const pencil: Tool = {
 
       const angle = Math.atan2(newY - oldY, newX - oldX)
       const perpAngle = angle + Math.PI / 2
-      const stripeWidth = settings.width ?? 1
+      const stripeWidth = drawHorse.brushSize
       const cosP = Math.cos(perpAngle)
       const sinP = Math.sin(perpAngle)
 
@@ -56,7 +56,7 @@ export const pencil: Tool = {
     }
 
     drawHorse.ctx.beginPath()
-    drawHorse.ctx.lineWidth = 5
+    drawHorse.ctx.lineWidth = drawHorse.brushSize
     drawHorse.ctx.lineCap = 'round'
     drawHorse.ctx.strokeStyle = drawHorse.selectedColor
     drawHorse.ctx.moveTo(drawHorse.pos.x, drawHorse.pos.y)
