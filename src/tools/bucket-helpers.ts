@@ -20,27 +20,51 @@ export function standardizeColor(str: string): [number, number, number] {
   return hexToRgb(colorctx.fillStyle)
 }
 
-export function matchStartColor(
-  pixelPos: number,
-  colorLayer: ImageData,
-  startColor: [number, number, number]
-): boolean {
-  const r = colorLayer.data[pixelPos]
-  const g = colorLayer.data[pixelPos + 1]
-  const b = colorLayer.data[pixelPos + 2]
-  return r === startColor[0] && g === startColor[1] && b === startColor[2]
+/**
+ * Converts any CSS color string to an RGBA array by rendering it to a 1×1 canvas.
+ */
+export function cssColorToRgba(cssColor: string): [number, number, number, number] {
+  const canvas = document.createElement('canvas')
+  canvas.width = 1
+  canvas.height = 1
+  const ctx = canvas.getContext('2d')!
+  ctx.clearRect(0, 0, 1, 1)
+  ctx.fillStyle = cssColor
+  ctx.fillRect(0, 0, 1, 1)
+  const d = ctx.getImageData(0, 0, 1, 1).data
+  return [d[0], d[1], d[2], d[3]]
 }
 
-export function colorPixel(
-  pixelPos: number,
-  colorLayer: ImageData,
-  _fillColor: string  // Known bug preserved: fillColor is intentionally unused
+/**
+ * Returns true if the pixel at `pos` in `data` matches `startColor` within `maxDiff`
+ * (sum of absolute RGB channel differences). Handles transparent pixels correctly.
+ */
+export function matchStartColorWithTolerance(
+  data: Uint8ClampedArray,
+  pos: number,
+  startColor: [number, number, number, number],
+  maxDiff: number
+): boolean {
+  const a = data[pos + 3]
+  if (startColor[3] === 0) return a === 0
+  if (a === 0) return false
+  return (
+    Math.abs(data[pos] - startColor[0]) +
+    Math.abs(data[pos + 1] - startColor[1]) +
+    Math.abs(data[pos + 2] - startColor[2])
+  ) < maxDiff
+}
+
+/**
+ * Writes `fillRgba` into the pixel at `pos` in `data` with full opacity.
+ */
+export function colorPixelRgba(
+  data: Uint8ClampedArray,
+  pos: number,
+  fillRgba: [number, number, number, number]
 ): void {
-  // Known bug from script.js: hardcodes [100, 1, 2] instead of parsing _fillColor.
-  // The bucket button is commented out in index.html until this is fixed (tracked separately).
-  const color = [100, 1, 2]
-  colorLayer.data[pixelPos] = color[0]
-  colorLayer.data[pixelPos + 1] = color[1]
-  colorLayer.data[pixelPos + 2] = color[2]
-  colorLayer.data[pixelPos + 3] = 255
+  data[pos] = fillRgba[0]
+  data[pos + 1] = fillRgba[1]
+  data[pos + 2] = fillRgba[2]
+  data[pos + 3] = 255
 }
