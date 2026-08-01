@@ -328,11 +328,8 @@
     const d = ctx.getImageData(0, 0, 1, 1).data;
     return [d[0], d[1], d[2], d[3]];
   }
-  function matchStartColorWithTolerance(data, pos, startColor, maxDiff) {
-    const a = data[pos + 3];
-    if (startColor[3] === 0) return a === 0;
-    if (a === 0) return false;
-    return Math.abs(data[pos] - startColor[0]) + Math.abs(data[pos + 1] - startColor[1]) + Math.abs(data[pos + 2] - startColor[2]) < maxDiff;
+  function matchExact(data, pos, color) {
+    return data[pos] === color[0] && data[pos + 1] === color[1] && data[pos + 2] === color[2] && data[pos + 3] === color[3];
   }
   function colorPixelRgba(data, pos, fillRgba) {
     data[pos] = fillRgba[0];
@@ -342,8 +339,7 @@
   }
 
   // src/tools/bucket.ts
-  var DEFAULT_TOLERANCE = 0.75;
-  var MATCH_MAX_DIFF = 255 * 3 * DEFAULT_TOLERANCE;
+  var EDGE_BLEED = 1;
   var bucket = {
     name: "bucket",
     button: document.getElementById("bucket"),
@@ -371,19 +367,19 @@
         data[pixelPos + 3]
       ];
       const fillRgba = cssColorToRgba(drawHorse.selectedColor);
-      if (matchStartColorWithTolerance(data, pixelPos, fillRgba, 255 * 3 * 0.05)) return;
+      if (matchExact(data, pixelPos, fillRgba)) return;
       const stack = [[x, y]];
       const visited = new Uint8Array(width * height);
       while (stack.length > 0) {
         const [currentX, currentY] = stack.pop();
         const initialIndex = currentY * width + currentX;
-        if (visited[initialIndex] || !matchStartColorWithTolerance(data, initialIndex * 4, startColor, MATCH_MAX_DIFF)) continue;
+        if (visited[initialIndex] || !matchExact(data, initialIndex * 4, startColor)) continue;
         let leftX = currentX;
-        while (leftX > 0 && matchStartColorWithTolerance(data, (currentY * width + leftX - 1) * 4, startColor, MATCH_MAX_DIFF)) {
+        while (leftX > 0 && matchExact(data, (currentY * width + leftX - 1) * 4, startColor)) {
           leftX--;
         }
         let rightX = currentX;
-        while (rightX < width - 1 && matchStartColorWithTolerance(data, (currentY * width + rightX + 1) * 4, startColor, MATCH_MAX_DIFF)) {
+        while (rightX < width - 1 && matchExact(data, (currentY * width + rightX + 1) * 4, startColor)) {
           rightX++;
         }
         let spanAddedAbove = false;
@@ -396,7 +392,7 @@
           visited[index] = 1;
           if (aboveY >= 0) {
             const aboveIndex = aboveY * width + scanX;
-            if (!visited[aboveIndex] && matchStartColorWithTolerance(data, aboveIndex * 4, startColor, MATCH_MAX_DIFF)) {
+            if (!visited[aboveIndex] && matchExact(data, aboveIndex * 4, startColor)) {
               if (!spanAddedAbove) {
                 stack.push([scanX, aboveY]);
                 spanAddedAbove = true;
@@ -407,7 +403,7 @@
           }
           if (belowY < height) {
             const belowIndex = belowY * width + scanX;
-            if (!visited[belowIndex] && matchStartColorWithTolerance(data, belowIndex * 4, startColor, MATCH_MAX_DIFF)) {
+            if (!visited[belowIndex] && matchExact(data, belowIndex * 4, startColor)) {
               if (!spanAddedBelow) {
                 stack.push([scanX, belowY]);
                 spanAddedBelow = true;
@@ -416,6 +412,21 @@
               spanAddedBelow = false;
             }
           }
+        }
+      }
+      for (let pass = 0; pass < EDGE_BLEED; pass++) {
+        const edge = [];
+        for (let py = 0; py < height; py++) {
+          for (let px = 0; px < width; px++) {
+            const idx = py * width + px;
+            if (visited[idx]) continue;
+            const touchesFilled = py > 0 && visited[idx - width] || py < height - 1 && visited[idx + width] || px > 0 && visited[idx - 1] || px < width - 1 && visited[idx + 1];
+            if (touchesFilled) edge.push(idx);
+          }
+        }
+        for (const idx of edge) {
+          colorPixelRgba(data, idx * 4, fillRgba);
+          visited[idx] = 1;
         }
       }
       ctx.putImageData(imageData, 0, 0);

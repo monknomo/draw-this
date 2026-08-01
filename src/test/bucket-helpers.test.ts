@@ -1,5 +1,34 @@
 // src/test/bucket-helpers.test.ts
-import { hexToRgb, rgbToHex, standardizeColor } from '../tools/bucket-helpers'
+import { hexToRgb, rgbToHex, standardizeColor, matchExact } from '../tools/bucket-helpers'
+
+describe('matchExact (flood-fill traversal)', () => {
+  // pixel buffer: [white, black, near-white(254), transparent]
+  const data = new Uint8ClampedArray([
+    255, 255, 255, 255,
+    0, 0, 0, 255,
+    254, 255, 255, 255,
+    0, 0, 0, 0,
+  ])
+
+  it('matches a byte-for-byte identical pixel', () => {
+    expect(matchExact(data, 0, [255, 255, 255, 255])).toBe(true)
+  })
+
+  it('treats a solid stroke pixel as a non-match (hard barrier)', () => {
+    expect(matchExact(data, 4, [255, 255, 255, 255])).toBe(false)
+  })
+
+  it('rejects a one-channel-off antialiased fringe pixel (no tolerance)', () => {
+    // 254 vs 255 in the red channel — previously passed under fuzzy tolerance,
+    // now a barrier. This is what stops fills bleeding across stroke edges.
+    expect(matchExact(data, 8, [255, 255, 255, 255])).toBe(false)
+  })
+
+  it('distinguishes a transparent pixel from an opaque one of the same rgb', () => {
+    expect(matchExact(data, 12, [0, 0, 0, 255])).toBe(false)
+    expect(matchExact(data, 12, [0, 0, 0, 0])).toBe(true)
+  })
+})
 
 describe('hexToRgb (AC4.3)', () => {
   it.each([

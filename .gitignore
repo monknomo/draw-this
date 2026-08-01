@@ -1,3 +1,4 @@
 .worktrees/
 node_modules/
 gh-pages/
+.claude/
