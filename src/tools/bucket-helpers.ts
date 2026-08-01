@@ -56,6 +56,27 @@ export function matchStartColorWithTolerance(
 }
 
 /**
+ * Returns true only if the pixel at `pos` in `data` is an EXACT RGBA match for
+ * `color`. Used for flood-fill traversal: because every tool draws at 100%
+ * opacity with 100% colors, the region to fill is composed of pixels that are
+ * byte-for-byte identical, and anything else (including a stroke's antialiased
+ * fringe) is a hard barrier. This eliminates the tolerance-driven bleed-through
+ * that let fills leak across stroke boundaries (see issues #23, #24).
+ */
+export function matchExact(
+  data: Uint8ClampedArray,
+  pos: number,
+  color: [number, number, number, number]
+): boolean {
+  return (
+    data[pos] === color[0] &&
+    data[pos + 1] === color[1] &&
+    data[pos + 2] === color[2] &&
+    data[pos + 3] === color[3]
+  )
+}
+
+/**
  * Writes `fillRgba` into the pixel at `pos` in `data` with full opacity.
  */
 export function colorPixelRgba(
