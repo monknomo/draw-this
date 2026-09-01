@@ -174,19 +174,22 @@ describe('canvas draw calls (import-based)', () => {
   })
 
   describe('bubbles rainbow slice colors', () => {
-    it('getRainbowColorForY returns red at the bottom', () => {
-      expect(getRainbowColorForY(590, 600)).toBe('red')
+    // Classic palette colors, passed explicitly (the color source is now the active palette).
+    const CLASSIC = ['red', 'orange', 'yellow', 'green', 'blue', 'violet', 'purple']
+
+    it('getRainbowColorForY returns colors[0] at the bottom', () => {
+      expect(getRainbowColorForY(590, 600, CLASSIC)).toBe('red')
     })
 
-    it('getRainbowColorForY returns purple at the top', () => {
-      expect(getRainbowColorForY(10, 600)).toBe('purple')
+    it('getRainbowColorForY returns the last color at the top', () => {
+      expect(getRainbowColorForY(10, 600, CLASSIC)).toBe('purple')
     })
 
     it('getRainbowColorForY returns distinct colors across 7 slices', () => {
       const height = 700
       const sliceHeight = height / 7
       const colors = Array.from({ length: 7 }, (_, i) =>
-        getRainbowColorForY(height - (i + 0.5) * sliceHeight, height)
+        getRainbowColorForY(height - (i + 0.5) * sliceHeight, height, CLASSIC)
       )
       expect(new Set(colors).size).toBe(7)
     })
