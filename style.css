@@ -91,6 +91,15 @@ h1 {
   display: none;
 }
 
+/* Palette picker buttons live in the top bar, revealed when the palette button
+   sets data-active-category="palette" (mirrors the category mechanism). */
+#top-tools .palette-choice {
+  display: none;
+}
+#top-tools[data-active-category="palette"] .palette-choice {
+  display: inline-block;
+}
+
 #stampchooser {
   display: none;
   align-items: center;
@@ -169,39 +178,7 @@ button.selectedColorChoice {
   border: solid .15rem pink;
 }
 
-button#red{
-  background-color: red;
-}
-button#orange{
-  background-color: orange;
-}
-button#yellow{
-  background-color: yellow;
-}
-button#green{
-  background-color: green;
-}
-button#blue{
-  background-color: blue;
-}
-button#violet{
-  background-color: violet;
-}
-button#purple{
-  background-color: purple;
-}
-button#black{
-  background-color:black;
-}
-button#white{
-  background-color:white;
-}
-
-button#saddlebrown{
-  background-color:saddlebrown;
-}
-
-button#rainbow{
-  background: linear-gradient(to bottom, red, orange, yellow, green, blue, pink, purple);
-}
+/* Per-color swatch backgrounds are now applied inline via style.backgroundColor
+   from the active palette (colors may be hex, which can't be an id selector).
+   Only the special rainbow swatch keeps a CSS gradient (see button#rainbow above). */
 

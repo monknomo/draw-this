@@ -32,11 +32,13 @@ describe('drawHorse state (import-based)', () => {
   })
 
   describe('AC1.8: color button click sets selectedColor', () => {
-    it('clicking a color button sets drawHorse.selectedColor to the button id', () => {
-      // setupColorChooser is called in window.onload (which runs from setup.ts via __drawHorse)
-      // For the TypeScript drawHorse object, call setupColorChooser directly
-      drawHorse.setupColorChooser()
-      const redButton = document.getElementById('red') as HTMLElement
+    it('clicking a color swatch sets drawHorse.selectedColor to its data-color', () => {
+      // Swatches are now rendered dynamically from the active palette; each stores
+      // its color in a data-color attribute (colors may be hex, not usable as an id).
+      drawHorse.renderColorChoices()
+      const redButton = document.querySelector(
+        '#swatches .colorChoice[data-color="red"]'
+      ) as HTMLElement
       redButton.click()
       expect(drawHorse.selectedColor).toBe('red')
     })

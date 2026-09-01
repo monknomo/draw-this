@@ -15,21 +15,14 @@ document.body.innerHTML = `
   <div id="stretcher">
     <canvas id="drawHere"></canvas>
   </div>
+  <div id="colors-col">
+    <button id="palette-button" class="colorChoice">🎨</button>
+    <div id="swatches"></div>
+    <button id="size-increase" class="colorChoice">+</button>
+    <button id="size-decrease" class="colorChoice">-</button>
+  </div>
   <footer id="colors">
     <div id="stampchooser" style="display:none;"></div>
-    <div id="colorchooser">
-      <button id="red" class="colorChoice"></button>
-      <button id="orange" class="colorChoice"></button>
-      <button id="yellow" class="colorChoice"></button>
-      <button id="green" class="colorChoice"></button>
-      <button id="blue" class="colorChoice"></button>
-      <button id="violet" class="colorChoice"></button>
-      <button id="purple" class="colorChoice"></button>
-      <button id="saddlebrown" class="colorChoice"></button>
-      <button id="black" class="colorChoice"></button>
-      <button id="white" class="colorChoice"></button>
-      <button id="rainbow" class="colorChoice">r</button>
-    </div>
     <audio id="clickSound"></audio>
     <audio id="drippingSound"></audio>
     <audio id="stampSound"></audio>
@@ -48,6 +41,10 @@ document.body.innerHTML = `
     <button id="nuke" class="control tool"></button>
     <button id="bucket" class="control tool" data-category="bucket"></button>
     <button id="screenshot" class="control"></button>
+    <button class="control palette-choice" data-palette="Classic"></button>
+    <button class="control palette-choice" data-palette="Pastel"></button>
+    <button class="control palette-choice" data-palette="Grayscale"></button>
+    <button class="control palette-choice" data-palette="Neon"></button>
   </div>
   <div id="category-col">
     <button class="control category" data-category="pen">pen</button>
