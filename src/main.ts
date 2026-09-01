@@ -21,8 +21,11 @@ globalThis.pauseSound = pauseSound as any
 drawHorse.currentTool = tools.pencil
 
 window.onload = (_event) => {
-  // Set up color choice click handlers
-  drawHorse.setupColorChooser()
+  // Render swatches for the default (Classic) palette and wire click handlers
+  drawHorse.renderColorChoices()
+
+  // Wire the palette picker (palette button + palette buttons in the top bar)
+  drawHorse.setupPalettePicker()
 
   // Assign canvas 2D context
   drawHorse.ctx = drawHorse.canvas.getContext('2d') as CanvasRenderingContext2D

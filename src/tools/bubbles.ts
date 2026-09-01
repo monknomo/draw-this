@@ -3,13 +3,17 @@ import type { Tool, ToolSettings } from '../types'
 import { drawHorse } from '../drawHorse'
 import { playSound } from '../sounds'
 
-const RAINBOW_COLORS = ['red', 'orange', 'yellow', 'green', 'blue', 'violet', 'purple']
-
-export function getRainbowColorForY(centerY: number, canvasHeight: number): string {
-  const sliceHeight = canvasHeight / RAINBOW_COLORS.length
-  // bottom = red (index 0), top = purple (last index)
+// Rainbow color source is the active palette's colors, passed in so this helper
+// stays testable in isolation. Shape unchanged: the canvas is sliced horizontally,
+// bottom = colors[0], top = colors[last].
+export function getRainbowColorForY(
+  centerY: number,
+  canvasHeight: number,
+  colors: string[]
+): string {
+  const sliceHeight = canvasHeight / colors.length
   const sliceIndex = Math.floor((canvasHeight - centerY) / sliceHeight)
-  return RAINBOW_COLORS[Math.max(0, Math.min(RAINBOW_COLORS.length - 1, sliceIndex))]
+  return colors[Math.max(0, Math.min(colors.length - 1, sliceIndex))]
 }
 
 // Bubble SVGs: circle+highlight design with %%%% color placeholder (upper-left, upper-right, top-center)
@@ -68,7 +72,11 @@ export const bubbles: Tool = {
       const bubbleCenterY = drawY + bubbleSize / 2
 
       const color = drawHorse.selectedColor === 'rainbow'
-        ? getRainbowColorForY(bubbleCenterY, drawHorse.ctx.canvas.height)
+        ? getRainbowColorForY(
+            bubbleCenterY,
+            drawHorse.ctx.canvas.height,
+            drawHorse.activePalette.colors
+          )
         : drawHorse.selectedColor
 
       img.src = 'data:image/svg+xml;base64,' + colorizeBubbleSvg(base64, color)
