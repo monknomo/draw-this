@@ -1,25 +1,17 @@
 // src/tools/pencil.ts
-import type { Tool, ToolSettings } from '../types'
+import type { Tool } from '../types'
 import { drawHorse } from '../drawHorse'
 import { playSound, pauseSound } from '../sounds'
+import { rainbowStripeWidth } from '../sizeControl'
 
 const RAINBOW_COLORS = ['red', 'orange', 'yellow', 'green', 'blue', 'pink', 'purple']
-
-const settings: ToolSettings & { controls: Array<{ id: string; name: string; onclick: () => void }> } = {
-  width: 1,
-  controls: [
-    { id: 'increase', name: '+', onclick: () => { settings.width!-- } },
-    // Known bug preserved: 'decrease' control increments (swapped)
-    { id: 'decrease', name: '+', onclick: () => { settings.width!++ } },
-  ],
-}
 
 export const pencil: Tool = {
   name: 'pencil',
   button: document.getElementById('pencil') as HTMLElement,
   drawsImmediately: false,
   selectable: true,
-  settings,
+  usesSize: true,
 
   onclick(_e) {
     playSound('clickSound')
@@ -38,7 +30,9 @@ export const pencil: Tool = {
 
       const angle = Math.atan2(newY - oldY, newX - oldX)
       const perpAngle = angle + Math.PI / 2
-      const stripeWidth = drawHorse.brushSize
+      // Rainbow is special: seven stripes side by side, so the band is 7x wide.
+      // Stripe width scales gently (1px at default size) instead of using brushSize directly.
+      const stripeWidth = rainbowStripeWidth(drawHorse.brushSize)
       const cosP = Math.cos(perpAngle)
       const sinP = Math.sin(perpAngle)
 

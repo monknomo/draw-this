@@ -1,22 +1,14 @@
 // src/tools/eraser.ts
-import type { Tool, ToolSettings } from '../types'
+import type { Tool } from '../types'
 import { drawHorse } from '../drawHorse'
 import { playSound, pauseSound } from '../sounds'
-
-const settings: ToolSettings & { controls: Array<{ id: string; name: string; onclick: () => void }> } = {
-  width: 5,
-  controls: [
-    { id: 'increase', name: '+', onclick: () => { settings.width!-- } },
-    { id: 'decrease', name: '+', onclick: () => { settings.width!++ } },
-  ],
-}
 
 export const eraser: Tool = {
   name: 'eraser',
   button: document.getElementById('eraser') as HTMLElement,
   drawsImmediately: false,
   selectable: true,
-  settings,
+  usesSize: true,
 
   onclick(_e) {
     playSound('clickSound')

@@ -16,26 +16,32 @@
     audio.currentTime = 0;
   }
 
+  // src/sizeControl.ts
+  var SIZE_MIN = 1;
+  var SIZE_MAX = 50;
+  var SIZE_DEFAULT = 5;
+  var STEP_SCHEDULE = [
+    { threshold: 10, step: 1 },
+    { threshold: 20, step: 2 },
+    { threshold: Infinity, step: 5 }
+  ];
+  function nextSize(current, direction) {
+    const tier = STEP_SCHEDULE.find((t) => current < t.threshold);
+    const step = tier.step;
+    return Math.min(SIZE_MAX, Math.max(SIZE_MIN, current + direction * step));
+  }
+  function rainbowStripeWidth(size) {
+    return Math.max(1, size / SIZE_DEFAULT);
+  }
+
   // src/tools/pencil.ts
   var RAINBOW_COLORS = ["red", "orange", "yellow", "green", "blue", "pink", "purple"];
-  var settings = {
-    width: 1,
-    controls: [
-      { id: "increase", name: "+", onclick: () => {
-        settings.width--;
-      } },
-      // Known bug preserved: 'decrease' control increments (swapped)
-      { id: "decrease", name: "+", onclick: () => {
-        settings.width++;
-      } }
-    ]
-  };
   var pencil = {
     name: "pencil",
     button: document.getElementById("pencil"),
     drawsImmediately: false,
     selectable: true,
-    settings,
+    usesSize: true,
     onclick(_e) {
       playSound("clickSound");
       drawHorse.showColorSelectors();
@@ -51,7 +57,7 @@
         const newY = drawHorse.pos.y;
         const angle = Math.atan2(newY - oldY, newX - oldX);
         const perpAngle = angle + Math.PI / 2;
-        const stripeWidth = drawHorse.brushSize;
+        const stripeWidth = rainbowStripeWidth(drawHorse.brushSize);
         const cosP = Math.cos(perpAngle);
         const sinP = Math.sin(perpAngle);
         RAINBOW_COLORS.forEach((color, i) => {
@@ -80,21 +86,6 @@
     }
   };
 
-  // src/sizeControl.ts
-  var SIZE_MIN = 1;
-  var SIZE_MAX = 50;
-  var SIZE_DEFAULT = 5;
-  var STEP_SCHEDULE = [
-    { threshold: 10, step: 1 },
-    { threshold: 20, step: 2 },
-    { threshold: Infinity, step: 5 }
-  ];
-  function nextSize(current, direction) {
-    const tier = STEP_SCHEDULE.find((t) => current < t.threshold);
-    const step = tier.step;
-    return Math.min(SIZE_MAX, Math.max(SIZE_MIN, current + direction * step));
-  }
-
   // src/tools/drips.ts
   var RAINBOW_COLORS2 = ["red", "orange", "yellow", "green", "blue", "violet", "purple"];
   var rainbowIndex = 0;
@@ -117,7 +108,7 @@
     button: document.getElementById("drips"),
     drawsImmediately: false,
     selectable: true,
-    settings: { width: 5 },
+    usesSize: true,
     onclick(_e) {
       playSound("clickSound");
       drawHorse.showColorSelectors();
@@ -178,7 +169,7 @@
     button: document.getElementById("stamp"),
     drawsImmediately: true,
     selectable: true,
-    settings: { width: 5 },
+    usesSize: true,
     onclick(_e) {
       playSound("clickSound");
       drawHorse.showStampSelectors();
@@ -211,7 +202,7 @@
   function colorizeBubbleSvg(base64, color) {
     return window.btoa(window.atob(base64).replaceAll("%%%%", color));
   }
-  var settings2 = {
+  var settings = {
     size: 35,
     sizeVariation: 15,
     maxNumberBubbles: 30
@@ -221,27 +212,27 @@
     button: document.getElementById("bubbles"),
     drawsImmediately: true,
     selectable: true,
-    settings: settings2,
+    settings,
     onclick(_e) {
       playSound("clickSound");
       drawHorse.showColorSelectors();
       drawHorse.hideStampSelectors();
     },
     draw(_e) {
-      const totalBubbles = Math.floor(Math.random() * settings2.maxNumberBubbles);
+      const totalBubbles = Math.floor(Math.random() * settings.maxNumberBubbles);
       for (let i = 0; i < totalBubbles; i++) {
-        const img = new Image(settings2.size, settings2.size);
+        const img = new Image(settings.size, settings.size);
         const bubbleChoice = Math.random();
         const base64 = bubbleChoice < 0.33 ? BUBBLE_BASE64_1 : bubbleChoice < 0.5 ? BUBBLE_BASE64_2 : BUBBLE_BASE64_3;
         const positive = Math.floor(Math.random() * 2) % 2 === 0 ? -1 : 1;
-        const xOffset = positive * Math.floor(Math.random() * (i * settings2.size));
-        const yOffset = Math.floor(Math.random() * (i * settings2.size));
+        const xOffset = positive * Math.floor(Math.random() * (i * settings.size));
+        const yOffset = Math.floor(Math.random() * (i * settings.size));
         const bubbleSizeSign = Math.floor(Math.random() * 2) % 2 === 0 ? -1 : 1;
         const bubbleSize = Math.floor(
-          settings2.size + bubbleSizeSign * Math.floor(Math.random() * settings2.sizeVariation)
+          settings.size + bubbleSizeSign * Math.floor(Math.random() * settings.sizeVariation)
         );
-        const drawX = drawHorse.pos.x - settings2.size / 2 + xOffset;
-        const drawY = drawHorse.pos.y - settings2.size / 2 - yOffset;
+        const drawX = drawHorse.pos.x - settings.size / 2 + xOffset;
+        const drawY = drawHorse.pos.y - settings.size / 2 - yOffset;
         const bubbleCenterY = drawY + bubbleSize / 2;
         const color = drawHorse.selectedColor === "rainbow" ? getRainbowColorForY(bubbleCenterY, drawHorse.ctx.canvas.height) : drawHorse.selectedColor;
         img.src = "data:image/svg+xml;base64," + colorizeBubbleSvg(base64, color);
@@ -255,23 +246,12 @@
   };
 
   // src/tools/eraser.ts
-  var settings3 = {
-    width: 5,
-    controls: [
-      { id: "increase", name: "+", onclick: () => {
-        settings3.width--;
-      } },
-      { id: "decrease", name: "+", onclick: () => {
-        settings3.width++;
-      } }
-    ]
-  };
   var eraser = {
     name: "eraser",
     button: document.getElementById("eraser"),
     drawsImmediately: false,
     selectable: true,
-    settings: settings3,
+    usesSize: true,
     onclick(_e) {
       playSound("clickSound");
       drawHorse.showColorSelectors();
@@ -586,6 +566,14 @@
       drawHorse.ctx.fillStyle = "white";
       drawHorse.ctx.fillRect(0, 0, drawHorse.ctx.canvas.width, drawHorse.ctx.canvas.height);
     },
+    // Enable the +/- buttons only for tools that honor the global brush size.
+    updateSizeControls() {
+      const enabled = !!drawHorse.currentTool.usesSize;
+      for (const id of ["size-increase", "size-decrease"]) {
+        const btn = document.getElementById(id);
+        if (btn) btn.disabled = !enabled;
+      }
+    },
     addListeners() {
       window.addEventListener("resize", drawHorse.resize);
       document.addEventListener(
@@ -602,6 +590,7 @@
             toolEl.classList.add("selectedControl");
             drawHorse.currentTool = tool;
             drawHorse.brushSize = SIZE_DEFAULT;
+            drawHorse.updateSizeControls();
           }
           tool.onclick(e);
         },
@@ -738,6 +727,7 @@
     drawHorse.ctx = drawHorse.canvas.getContext("2d");
     drawHorse.resize();
     drawHorse.addListeners();
+    drawHorse.updateSizeControls();
     document.querySelector('.category[data-category="pen"]')?.click();
     drawHorse.setupStamps();
     drawHorse.setupTools();

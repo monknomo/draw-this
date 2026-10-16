@@ -39,6 +39,7 @@ export const drawHorse: DrawHorseContext & {
   draw: (e: MouseEvent | TouchEvent) => void
   resize: () => void
   addListeners: () => void
+  updateSizeControls: () => void
   setupColorChooser: () => void
   getColorChoiceClickHandler: (cc: Element) => (e: Event) => void
   makeStampChoiceHandler: (cc: Element) => (e: Event) => void
@@ -117,6 +118,15 @@ export const drawHorse: DrawHorseContext & {
     drawHorse.ctx.fillRect(0, 0, drawHorse.ctx.canvas.width, drawHorse.ctx.canvas.height)
   },
 
+  // Enable the +/- buttons only for tools that honor the global brush size.
+  updateSizeControls() {
+    const enabled = !!drawHorse.currentTool.usesSize
+    for (const id of ['size-increase', 'size-decrease']) {
+      const btn = document.getElementById(id) as HTMLButtonElement | null
+      if (btn) btn.disabled = !enabled
+    }
+  },
+
   addListeners() {
     window.addEventListener('resize', drawHorse.resize)
 
@@ -139,6 +149,7 @@ export const drawHorse: DrawHorseContext & {
           drawHorse.currentTool = tool
           // Reset brush size to default on every tool change (no per-tool persistence).
           drawHorse.brushSize = SIZE_DEFAULT
+          drawHorse.updateSizeControls()
         }
         tool.onclick(e)
       },

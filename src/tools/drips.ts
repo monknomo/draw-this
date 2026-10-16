@@ -28,7 +28,7 @@ export const drips: Tool & { getDripSize: () => number } = {
   button: document.getElementById('drips') as HTMLElement,
   drawsImmediately: false,
   selectable: true,
-  settings: { width: 5 },
+  usesSize: true,
 
   onclick(_e) {
     playSound('clickSound')

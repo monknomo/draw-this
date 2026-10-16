@@ -10,7 +10,7 @@ export const stamp: Tool = {
   button: document.getElementById('stamp') as HTMLElement,
   drawsImmediately: true,
   selectable: true,
-  settings: { width: 5 },
+  usesSize: true,
 
   onclick(_e) {
     playSound('clickSound')

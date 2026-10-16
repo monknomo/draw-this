@@ -25,3 +25,12 @@ export function nextSize(current: number, direction: 1 | -1): number {
   const step = tier.step
   return Math.min(SIZE_MAX, Math.max(SIZE_MIN, current + direction * step))
 }
+
+/**
+ * Rainbow pencil draws seven stripes side by side, so using brushSize directly would make
+ * the band 7x brushSize wide (35px at default). Instead each stripe is 1px at the default
+ * size and grows proportionally with it (band 7px at default, 70px at max).
+ */
+export function rainbowStripeWidth(size: number): number {
+  return Math.max(1, size / SIZE_DEFAULT)
+}

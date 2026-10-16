@@ -1,6 +1,6 @@
 // src/test/size-control.test.ts
 import { describe, it, expect } from 'vitest'
-import { nextSize, SIZE_MIN, SIZE_MAX, SIZE_DEFAULT } from '../sizeControl'
+import { nextSize, rainbowStripeWidth, SIZE_MIN, SIZE_MAX, SIZE_DEFAULT } from '../sizeControl'
 
 describe('nextSize', () => {
   describe('increasing direction', () => {
@@ -57,5 +57,19 @@ describe('nextSize', () => {
       expect(SIZE_DEFAULT).toBeGreaterThanOrEqual(SIZE_MIN)
       expect(SIZE_DEFAULT).toBeLessThanOrEqual(SIZE_MAX)
     })
+  })
+})
+
+describe('rainbowStripeWidth', () => {
+  it('is 1px at the default size, preserving the original thin rainbow', () => {
+    expect(rainbowStripeWidth(SIZE_DEFAULT)).toBe(1)
+  })
+
+  it('never drops below 1px at small sizes', () => {
+    expect(rainbowStripeWidth(SIZE_MIN)).toBe(1)
+  })
+
+  it('grows proportionally with size', () => {
+    expect(rainbowStripeWidth(SIZE_MAX)).toBe(SIZE_MAX / SIZE_DEFAULT)
   })
 })

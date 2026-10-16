@@ -1,7 +1,6 @@
 // src/types.ts
 
 export interface ToolSettings {
-  width?: number
   size?: number
   sizeVariation?: number
   maxNumberBubbles?: number
@@ -16,6 +15,8 @@ export interface Tool {
   draw: (e: MouseEvent | TouchEvent) => void
   stopDrawing: (e: MouseEvent | TouchEvent) => void
   settings?: ToolSettings
+  /** True if the global brush size (+/-) affects this tool. Drives the size-control enabled state. */
+  usesSize?: boolean
 }
 
 export interface Stamp {

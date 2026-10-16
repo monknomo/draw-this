@@ -32,6 +32,7 @@ window.onload = (_event) => {
 
   // Register mouse and touch event listeners
   drawHorse.addListeners()
+  drawHorse.updateSizeControls()
 
   // Select pen category and auto-select the pencil tool
   document.querySelector<HTMLElement>('.category[data-category="pen"]')?.click()

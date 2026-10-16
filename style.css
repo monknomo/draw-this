@@ -120,10 +120,18 @@ button#size-increase {
   margin-top: 0.5em;
 }
 
-button#size-increase,
-button#size-decrease {
+button.sizeChoice {
+  border: solid .1rem darkgray;
+  height: 3em;
+  width: 3em;
   background-color: #FFF483;
   font-weight: bold;
+}
+
+/* Size only applies to some tools (pencil, eraser, drips, stamp); dim it for the rest. */
+button.sizeChoice:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
 }
 
 button.control {
