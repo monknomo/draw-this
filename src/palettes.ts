@@ -40,3 +40,14 @@ export const PALETTES: Palette[] = [
 export const SHARED_NEUTRALS = ['black', 'white'] as const
 
 export const DEFAULT_PALETTE = PALETTES[0]
+
+// Every color a palette offers as a swatch, in display order (the rainbow swatch is
+// separate: it is always present and is not a color). Single source of truth for
+// both swatch rendering and "is this color still available after a palette swap?".
+export function swatchColors(palette: Palette): string[] {
+  return [
+    ...palette.colors,
+    ...SHARED_NEUTRALS,
+    ...(palette.accentNeutral ? [palette.accentNeutral] : []),
+  ]
+}

@@ -223,6 +223,20 @@ button.colorChoice {
 
 /*div.colorChoice {}*/
 
+/* The palette button sits in #colors-col but is not a color: it has its own class so
+   the color-choice handler and selected-swatch highlight never apply to it. */
+button.paletteChoice {
+  border: solid .1rem darkgray;
+  height: 3em;
+  width: 3em;
+  background-color: #FFF483;
+}
+
+button.paletteChoice:active {
+  transform: scale(0.92);
+  background-color: #FFE24A;
+}
+
 button.selectedColorChoice {
   border: solid .15rem pink;
 }

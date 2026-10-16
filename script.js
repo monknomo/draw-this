@@ -159,6 +159,13 @@
   ];
   var SHARED_NEUTRALS = ["black", "white"];
   var DEFAULT_PALETTE = PALETTES[0];
+  function swatchColors(palette) {
+    return [
+      ...palette.colors,
+      ...SHARED_NEUTRALS,
+      ...palette.accentNeutral ? [palette.accentNeutral] : []
+    ];
+  }
 
   // src/tools/stamp/colorize.ts
   function buildRainbowStops(colors) {
@@ -712,13 +719,7 @@
     renderColorChoices() {
       const container = document.getElementById("swatches");
       if (!container) return;
-      const palette = drawHorse.activePalette;
-      const swatchColors = [
-        ...palette.colors,
-        ...SHARED_NEUTRALS,
-        ...palette.accentNeutral ? [palette.accentNeutral] : []
-      ];
-      let html = swatchColors.map(
+      let html = swatchColors(drawHorse.activePalette).map(
         (color) => `<button class="colorChoice" data-color="${color}" style="background-color:${color}"></button>`
       ).join("");
       html += `<button id="rainbow" class="colorChoice" data-color="rainbow"></button>`;
@@ -736,11 +737,14 @@
         drawHorse.colorChoices[i].onclick = drawHorse.getColorChoiceClickHandler(drawHorse.colorChoices[i]);
       }
     },
-    // Apply a palette: set state, re-render swatches, reset selectedColor to the
-    // palette's first color, and highlight that first swatch.
+    // Apply a palette: set state and re-render swatches. The current color survives the
+    // swap when the new palette still offers it (rainbow and the shared neutrals always
+    // do); otherwise fall back to black, which is always available and always visible.
+    // Swatch highlighting is restored by renderColorChoices().
     applyPalette(palette) {
       drawHorse.activePalette = palette;
-      drawHorse.selectedColor = palette.colors[0];
+      const keep = drawHorse.selectedColor === "rainbow" || swatchColors(palette).includes(drawHorse.selectedColor);
+      if (!keep) drawHorse.selectedColor = "black";
       drawHorse.renderColorChoices();
     },
     setupPalettePicker() {

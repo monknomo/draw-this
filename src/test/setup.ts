@@ -16,7 +16,7 @@ document.body.innerHTML = `
     <canvas id="drawHere"></canvas>
   </div>
   <div id="colors-col">
-    <button id="palette-button" class="colorChoice">🎨</button>
+    <button id="palette-button" class="paletteChoice">🎨</button>
     <div id="swatches"></div>
     <button id="size-increase" class="sizeChoice" disabled>+</button>
     <button id="size-decrease" class="sizeChoice" disabled>-</button>
@@ -24,22 +24,6 @@ document.body.innerHTML = `
   </div>
   <footer id="colors">
     <div id="stampchooser" style="display:none;"></div>
-    <div id="colorchooser">
-      <button id="red" class="colorChoice"></button>
-      <button id="orange" class="colorChoice"></button>
-      <button id="yellow" class="colorChoice"></button>
-      <button id="green" class="colorChoice"></button>
-      <button id="blue" class="colorChoice"></button>
-      <button id="violet" class="colorChoice"></button>
-      <button id="purple" class="colorChoice"></button>
-      <button id="saddlebrown" class="colorChoice"></button>
-      <button id="black" class="colorChoice"></button>
-      <button id="white" class="colorChoice"></button>
-      <button id="rainbow" class="colorChoice">r</button>
-      <button id="size-increase" class="sizeChoice" disabled>+</button>
-      <button id="size-decrease" class="sizeChoice" disabled>-</button>
-      <div id="size-preview" class="disabled"><span id="size-dot"></span></div>
-    </div>
     <audio id="clickSound"></audio>
     <audio id="drippingSound"></audio>
     <audio id="stampSound"></audio>

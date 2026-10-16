@@ -1,6 +1,6 @@
 // src/test/palettes.test.ts
 import { describe, it, expect } from 'vitest'
-import { PALETTES, SHARED_NEUTRALS, DEFAULT_PALETTE } from '../palettes'
+import { PALETTES, SHARED_NEUTRALS, DEFAULT_PALETTE, swatchColors } from '../palettes'
 
 describe('palette data invariants', () => {
   it('ships exactly four palettes', () => {
@@ -47,5 +47,23 @@ describe('palette data invariants', () => {
     expect(grayscale.colors).not.toContain('#ffffff')
     expect(grayscale.colors).not.toContain('black')
     expect(grayscale.colors).not.toContain('white')
+  })
+})
+
+describe('swatchColors', () => {
+  it('lists palette colors, then shared neutrals, then the accent neutral', () => {
+    const classic = PALETTES.find(p => p.name === 'Classic')!
+    expect(swatchColors(classic)).toEqual([
+      ...classic.colors, ...SHARED_NEUTRALS, classic.accentNeutral,
+    ])
+  })
+
+  it('omits the accent slot when the palette has none', () => {
+    const grayscale = PALETTES.find(p => p.name === 'Grayscale')!
+    expect(swatchColors(grayscale)).toEqual([...grayscale.colors, ...SHARED_NEUTRALS])
+  })
+
+  it('always includes black, so it is a safe fallback color', () => {
+    for (const p of PALETTES) expect(swatchColors(p)).toContain('black')
   })
 })

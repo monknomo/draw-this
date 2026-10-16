@@ -4,7 +4,7 @@ import { tools } from './tools/index'
 import { stamps } from './stamps'
 import { colorizeStamp } from './tools/stamp/colorize'
 import { SIZE_DEFAULT, nextSize } from './sizeControl'
-import { PALETTES, SHARED_NEUTRALS, DEFAULT_PALETTE, type Palette } from './palettes'
+import { PALETTES, DEFAULT_PALETTE, swatchColors, type Palette } from './palettes'
 
 const noopTool: Tool = {
   name: 'noop',
@@ -257,14 +257,7 @@ export const drawHorse: DrawHorseContext & {
     const container = document.getElementById('swatches')
     if (!container) return
 
-    const palette = drawHorse.activePalette
-    const swatchColors = [
-      ...palette.colors,
-      ...SHARED_NEUTRALS,
-      ...(palette.accentNeutral ? [palette.accentNeutral] : []),
-    ]
-
-    let html = swatchColors
+    let html = swatchColors(drawHorse.activePalette)
       .map(
         color =>
           `<button class="colorChoice" data-color="${color}" ` +
@@ -291,11 +284,16 @@ export const drawHorse: DrawHorseContext & {
     }
   },
 
-  // Apply a palette: set state, re-render swatches, reset selectedColor to the
-  // palette's first color, and highlight that first swatch.
+  // Apply a palette: set state and re-render swatches. The current color survives the
+  // swap when the new palette still offers it (rainbow and the shared neutrals always
+  // do); otherwise fall back to black, which is always available and always visible.
+  // Swatch highlighting is restored by renderColorChoices().
   applyPalette(palette) {
     drawHorse.activePalette = palette
-    drawHorse.selectedColor = palette.colors[0]
+    const keep =
+      drawHorse.selectedColor === 'rainbow' ||
+      swatchColors(palette).includes(drawHorse.selectedColor)
+    if (!keep) drawHorse.selectedColor = 'black'
     drawHorse.renderColorChoices()
   },
 
