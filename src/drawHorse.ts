@@ -4,7 +4,7 @@ import { tools } from './tools/index'
 import { stamps } from './stamps'
 import { colorizeStamp } from './tools/stamp/colorize'
 import { SIZE_DEFAULT, nextSize } from './sizeControl'
-import { DEFAULT_PALETTE, swatchColors, cyclePalette, type Palette } from './palettes'
+import { DEFAULT_PALETTE, swatchColors, cyclePalette, equivalentColor, type Palette } from './palettes'
 import { playSound } from './sounds'
 
 const noopTool: Tool = {
@@ -285,16 +285,16 @@ export const drawHorse: DrawHorseContext & {
     }
   },
 
-  // Apply a palette: set state and re-render swatches. The current color survives the
-  // swap when the new palette still offers it (rainbow and the shared neutrals always
-  // do); otherwise fall back to black, which is always available and always visible.
-  // Swatch highlighting is restored by renderColorChoices().
+  // Apply a palette: set state and re-render swatches. The selected color is translated
+  // to its equivalent slot in the new palette (red -> pastel pink -> ...); black, white
+  // and rainbow stay as they are. renderColorChoices() restores the swatch highlight.
   applyPalette(palette) {
+    drawHorse.selectedColor = equivalentColor(
+      drawHorse.selectedColor,
+      drawHorse.activePalette,
+      palette
+    )
     drawHorse.activePalette = palette
-    const keep =
-      drawHorse.selectedColor === 'rainbow' ||
-      swatchColors(palette).includes(drawHorse.selectedColor)
-    if (!keep) drawHorse.selectedColor = 'black'
     drawHorse.renderColorChoices()
   },
 

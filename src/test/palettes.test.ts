@@ -1,6 +1,6 @@
 // src/test/palettes.test.ts
 import { describe, it, expect } from 'vitest'
-import { PALETTES, SHARED_NEUTRALS, DEFAULT_PALETTE, swatchColors, cyclePalette } from '../palettes'
+import { PALETTES, SHARED_NEUTRALS, DEFAULT_PALETTE, swatchColors, cyclePalette, equivalentColor } from '../palettes'
 
 describe('palette data invariants', () => {
   it('ships exactly four palettes', () => {
@@ -112,5 +112,49 @@ describe('cyclePalette (ring buffer)', () => {
 
   it('forward then back returns to the start', () => {
     for (const p of PALETTES) expect(cyclePalette(cyclePalette(p, 1), -1)).toBe(p)
+  })
+})
+
+describe('equivalentColor (same swatch slot in another palette)', () => {
+  const [classic, pastel, grayscale, neon] = PALETTES
+
+  it('maps each chromatic slot to the same index in the target palette', () => {
+    classic.colors.forEach((c, i) => {
+      expect(equivalentColor(c, classic, pastel)).toBe(pastel.colors[i])
+      expect(equivalentColor(c, classic, grayscale)).toBe(grayscale.colors[i])
+      expect(equivalentColor(c, classic, neon)).toBe(neon.colors[i])
+    })
+  })
+
+  it('maps black to black, white to white, and the accent to the accent', () => {
+    for (const to of PALETTES) {
+      expect(equivalentColor('black', classic, to)).toBe('black')
+      expect(equivalentColor('white', classic, to)).toBe('white')
+      expect(equivalentColor(classic.accentNeutral, classic, to)).toBe(to.accentNeutral)
+    }
+  })
+
+  it('never translates rainbow', () => {
+    expect(equivalentColor('rainbow', classic, neon)).toBe('rainbow')
+  })
+
+  it('is the identity when the palette does not change', () => {
+    for (const p of PALETTES) {
+      for (const c of swatchColors(p)) expect(equivalentColor(c, p, p)).toBe(c)
+    }
+  })
+
+  it('round-trips every swatch between every pair of palettes', () => {
+    for (const a of PALETTES) {
+      for (const b of PALETTES) {
+        for (const c of swatchColors(a)) {
+          expect(equivalentColor(equivalentColor(c, a, b), b, a)).toBe(c)
+        }
+      }
+    }
+  })
+
+  it('falls back to black for a color the source palette does not offer', () => {
+    expect(equivalentColor('#123456', classic, pastel)).toBe('black')
   })
 })

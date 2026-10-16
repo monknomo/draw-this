@@ -131,7 +131,7 @@ Key methods:
 - `renderColorChoices()` -- renders `#swatches` from the active palette; each swatch is a `.colorChoice` with `data-color` (hex colors can't be ids)
 - `setupColorChooser()` -- assigns click handlers to `.colorChoice` buttons; color is read from `data-color`. The palette and size buttons deliberately use their own classes (`paletteChoice`, `sizeChoice`) so they are never treated as colors
 - `setupPalettePicker()` -- wires `#palette-next` (above the swatches) and `#palette-prev` (below them); each click plays the click sound and steps the active palette through `PALETTES` ring-buffer style via `cyclePalette()` (wraps both ways)
-- `applyPalette(palette)` -- swaps the active palette; keeps `selectedColor` if the new palette still offers it (rainbow and shared neutrals always do), else falls back to black
+- `applyPalette(palette)` -- swaps the active palette and translates `selectedColor` to the equivalent swatch slot of the new palette (`equivalentColor()`; slot i is the same role in every palette, and every palette has the same number of swatches); rainbow is left alone
 
 ### `window.onload` initialization order (in `src/main.ts`)
 

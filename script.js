@@ -172,6 +172,12 @@
     const i = found === -1 ? PALETTES.indexOf(DEFAULT_PALETTE) : found;
     return PALETTES[(i + step + n) % n];
   }
+  function equivalentColor(color, from, to) {
+    if (color === "rainbow") return color;
+    const slot = swatchColors(from).indexOf(color);
+    const target = swatchColors(to)[slot];
+    return slot === -1 || target === void 0 ? "black" : target;
+  }
 
   // src/tools/stamp/colorize.ts
   function buildRainbowStops(colors) {
@@ -743,14 +749,16 @@
         drawHorse.colorChoices[i].onclick = drawHorse.getColorChoiceClickHandler(drawHorse.colorChoices[i]);
       }
     },
-    // Apply a palette: set state and re-render swatches. The current color survives the
-    // swap when the new palette still offers it (rainbow and the shared neutrals always
-    // do); otherwise fall back to black, which is always available and always visible.
-    // Swatch highlighting is restored by renderColorChoices().
+    // Apply a palette: set state and re-render swatches. The selected color is translated
+    // to its equivalent slot in the new palette (red -> pastel pink -> ...); black, white
+    // and rainbow stay as they are. renderColorChoices() restores the swatch highlight.
     applyPalette(palette) {
+      drawHorse.selectedColor = equivalentColor(
+        drawHorse.selectedColor,
+        drawHorse.activePalette,
+        palette
+      );
       drawHorse.activePalette = palette;
-      const keep = drawHorse.selectedColor === "rainbow" || swatchColors(palette).includes(drawHorse.selectedColor);
-      if (!keep) drawHorse.selectedColor = "black";
       drawHorse.renderColorChoices();
     },
     // Two arrow buttons step through the palettes like a ring buffer: ▶ (above the

@@ -10,6 +10,11 @@
 // palette; `accentNeutral` is a required per-palette extra ("brown" slot). Because it
 // is required, every palette offers the same number of swatches (7 + 2 + 1 = 10), so the
 // color column keeps its height and the palette arrows never jump when cycling.
+//
+// Swatch SLOTS are equivalent across palettes: slot i (see swatchColors) plays the same
+// role in every palette, e.g. slot 0 is red / pastel pink / light gray / neon pink, and
+// the last slot is the "brown" accent. Switching palettes translates the selected color
+// to the same slot of the new palette (see equivalentColor).
 
 export interface Palette {
   name: string           // display name + stable key, e.g. 'Classic'
@@ -60,4 +65,14 @@ export function cyclePalette(current: Palette, step: 1 | -1): Palette {
   const found = PALETTES.findIndex(p => p.name === current.name)
   const i = found === -1 ? PALETTES.indexOf(DEFAULT_PALETTE) : found
   return PALETTES[(i + step + n) % n]
+}
+
+// The color in `to` that occupies the same swatch slot as `color` does in `from`.
+// 'rainbow' is not a slot and is never translated. A color that is not in `from`
+// (shouldn't happen) falls back to black, which every palette offers.
+export function equivalentColor(color: string, from: Palette, to: Palette): string {
+  if (color === 'rainbow') return color
+  const slot = swatchColors(from).indexOf(color)
+  const target = swatchColors(to)[slot]
+  return slot === -1 || target === undefined ? 'black' : target
 }

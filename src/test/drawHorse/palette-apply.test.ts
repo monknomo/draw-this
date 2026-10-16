@@ -14,47 +14,57 @@ describe('applyPalette (palette switching)', () => {
     expect(drawHorse.activePalette).toBe(neon)
   })
 
-  describe('color survives a palette swap', () => {
+  describe('selected color moves to its equivalent slot', () => {
     const pastel = PALETTES.find(p => p.name === 'Pastel')!
+    const grayscale = PALETTES.find(p => p.name === 'Grayscale')!
     const neon = PALETTES.find(p => p.name === 'Neon')!
 
-    it.each(['black', 'white', 'rainbow'])('keeps %s (offered by every palette)', color => {
+    it.each(['black', 'white', 'rainbow'])('keeps %s (same in every palette)', color => {
       drawHorse.selectedColor = color
       drawHorse.applyPalette(pastel)
       expect(drawHorse.selectedColor).toBe(color)
     })
 
-    it('keeps a color the new palette also offers', () => {
-      drawHorse.selectedColor = pastel.colors[2]
-      drawHorse.applyPalette(pastel)
-      expect(drawHorse.selectedColor).toBe(pastel.colors[2])
+    it('translates each chromatic slot (Classic -> Neon)', () => {
+      DEFAULT_PALETTE.colors.forEach((color, i) => {
+        drawHorse.applyPalette(DEFAULT_PALETTE)
+        drawHorse.selectedColor = color
+        drawHorse.applyPalette(neon)
+        expect(drawHorse.selectedColor).toBe(neon.colors[i])
+      })
     })
 
-    it('falls back to black when the new palette does not offer the color', () => {
-      drawHorse.selectedColor = 'red' // Classic only
-      drawHorse.applyPalette(neon)
-      expect(drawHorse.selectedColor).toBe('black')
-    })
-
-    it('falls back to black when the old accent neutral is not in the new palette', () => {
-      drawHorse.selectedColor = 'saddlebrown' // Classic accent
-      drawHorse.applyPalette(neon)
-      expect(drawHorse.selectedColor).toBe('black')
-    })
-
-    it('never lands on a near-white first color (Grayscale colors[0])', () => {
-      const grayscale = PALETTES.find(p => p.name === 'Grayscale')!
+    it('red becomes pastel pink, then back to red', () => {
       drawHorse.selectedColor = 'red'
-      drawHorse.applyPalette(grayscale)
-      expect(drawHorse.selectedColor).not.toBe(grayscale.colors[0])
+      drawHorse.applyPalette(pastel)
+      expect(drawHorse.selectedColor).toBe(pastel.colors[0])
+      drawHorse.applyPalette(DEFAULT_PALETTE)
+      expect(drawHorse.selectedColor).toBe('red')
     })
 
-    it('highlights the swatch of the color it kept', () => {
-      drawHorse.selectedColor = 'white'
+    it('translates the accent neutral to the new palette accent', () => {
+      drawHorse.selectedColor = 'saddlebrown'
+      drawHorse.applyPalette(pastel)
+      expect(drawHorse.selectedColor).toBe(pastel.accentNeutral)
+      drawHorse.applyPalette(grayscale)
+      expect(drawHorse.selectedColor).toBe(grayscale.accentNeutral)
+    })
+
+    it('every slot survives a full lap of the palettes', () => {
+      swatchColors(DEFAULT_PALETTE).forEach(color => {
+        drawHorse.applyPalette(DEFAULT_PALETTE)
+        drawHorse.selectedColor = color
+        PALETTES.slice(1).concat(DEFAULT_PALETTE).forEach(p => drawHorse.applyPalette(p))
+        expect(drawHorse.selectedColor).toBe(color)
+      })
+    })
+
+    it('highlights the equivalent swatch after the swap', () => {
+      drawHorse.selectedColor = 'orange'
       drawHorse.applyPalette(neon)
       const highlighted = document.querySelectorAll('#swatches .selectedColorChoice')
       expect(highlighted).toHaveLength(1)
-      expect((highlighted[0] as HTMLElement).dataset.color).toBe('white')
+      expect((highlighted[0] as HTMLElement).dataset.color).toBe(neon.colors[1])
     })
 
     it('highlights the rainbow swatch when rainbow is kept', () => {
@@ -62,6 +72,12 @@ describe('applyPalette (palette switching)', () => {
       drawHorse.applyPalette(neon)
       const highlighted = document.querySelector('#swatches .selectedColorChoice') as HTMLElement
       expect(highlighted.dataset.color).toBe('rainbow')
+    })
+
+    it('falls back to black for a color the old palette never offered', () => {
+      drawHorse.selectedColor = '#123456'
+      drawHorse.applyPalette(pastel)
+      expect(drawHorse.selectedColor).toBe('black')
     })
   })
 
@@ -84,14 +100,6 @@ describe('applyPalette (palette switching)', () => {
     })
     expect(new Set(counts).size, `swatch counts differ: ${counts.join(', ')}`).toBe(1)
     expect(counts[0]).toBe(11) // 7 colors + black + white + accent + rainbow
-  })
-
-  it('highlights the fallback swatch when the color is not carried over', () => {
-    const neon = PALETTES.find(p => p.name === 'Neon')!
-    drawHorse.selectedColor = 'red'
-    drawHorse.applyPalette(neon)
-    const highlighted = document.querySelector('#swatches .selectedColorChoice') as HTMLElement
-    expect(highlighted.dataset.color).toBe('black')
   })
 })
 
@@ -146,7 +154,7 @@ describe('palette arrows (ring-buffer cycling)', () => {
     expect(drawHorse.activePalette).toBe(PALETTES[1])
   })
 
-  it('does not change the selected color when the color exists in every palette', () => {
+  it('keeps black and rainbow when cycling', () => {
     for (const color of ['black', 'rainbow']) {
       drawHorse.selectedColor = color
       next().click()
