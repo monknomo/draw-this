@@ -16,26 +16,27 @@
     audio.currentTime = 0;
   }
 
+  // src/sizeControl.ts
+  var SIZE_MIN = 1;
+  var SIZE_MAX = 50;
+  var SIZE_DEFAULT = 5;
+  var SIZE_STEPS = [1, 5, 10, 20, 30, 50];
+  function nextSize(current, direction) {
+    const next = direction === 1 ? SIZE_STEPS.find((s) => s > current) ?? SIZE_MAX : [...SIZE_STEPS].reverse().find((s) => s < current) ?? SIZE_MIN;
+    return Math.min(SIZE_MAX, Math.max(SIZE_MIN, next));
+  }
+  function rainbowStripeWidth(size) {
+    return Math.max(1, size / SIZE_DEFAULT);
+  }
+
   // src/tools/pencil.ts
   var RAINBOW_COLORS = ["red", "orange", "yellow", "green", "blue", "pink", "purple"];
-  var settings = {
-    width: 1,
-    controls: [
-      { id: "increase", name: "+", onclick: () => {
-        settings.width--;
-      } },
-      // Known bug preserved: 'decrease' control increments (swapped)
-      { id: "decrease", name: "+", onclick: () => {
-        settings.width++;
-      } }
-    ]
-  };
   var pencil = {
     name: "pencil",
     button: document.getElementById("pencil"),
     drawsImmediately: false,
     selectable: true,
-    settings,
+    usesSize: true,
     onclick(_e) {
       playSound("clickSound");
       drawHorse.showColorSelectors();
@@ -51,7 +52,7 @@
         const newY = drawHorse.pos.y;
         const angle = Math.atan2(newY - oldY, newX - oldX);
         const perpAngle = angle + Math.PI / 2;
-        const stripeWidth = settings.width ?? 1;
+        const stripeWidth = rainbowStripeWidth(drawHorse.brushSize);
         const cosP = Math.cos(perpAngle);
         const sinP = Math.sin(perpAngle);
         RAINBOW_COLORS.forEach((color, i) => {
@@ -67,7 +68,7 @@
         return;
       }
       drawHorse.ctx.beginPath();
-      drawHorse.ctx.lineWidth = 5;
+      drawHorse.ctx.lineWidth = drawHorse.brushSize;
       drawHorse.ctx.lineCap = "round";
       drawHorse.ctx.strokeStyle = drawHorse.selectedColor;
       drawHorse.ctx.moveTo(drawHorse.pos.x, drawHorse.pos.y);
@@ -102,7 +103,7 @@
     button: document.getElementById("drips"),
     drawsImmediately: false,
     selectable: true,
-    settings: { width: 5 },
+    usesSize: true,
     onclick(_e) {
       playSound("clickSound");
       drawHorse.showColorSelectors();
@@ -114,10 +115,11 @@
       const color = drawHorse.selectedColor === "rainbow" ? RAINBOW_COLORS2[rainbowIndex++ % RAINBOW_COLORS2.length] : drawHorse.selectedColor;
       drawHorse.ctx.fillStyle = color;
       drawHorse.ctx.beginPath();
+      const sizeMultiplier = drawHorse.brushSize / SIZE_DEFAULT;
       drawHorse.ctx.arc(
         drawHorse.pos.x,
         drawHorse.pos.y,
-        this.getDripSize(),
+        this.getDripSize() * sizeMultiplier,
         0,
         Math.PI * 2,
         true
@@ -162,7 +164,7 @@
     button: document.getElementById("stamp"),
     drawsImmediately: true,
     selectable: true,
-    settings: { width: 5 },
+    usesSize: true,
     onclick(_e) {
       playSound("clickSound");
       drawHorse.showStampSelectors();
@@ -170,10 +172,12 @@
     },
     draw(_e) {
       playSound("stampSound");
-      const img = new Image(50, 50);
+      const stampPx = drawHorse.brushSize * (50 / SIZE_DEFAULT);
+      const halfStamp = stampPx / 2;
+      const img = new Image(stampPx, stampPx);
       img.src = "data:image/svg+xml;base64," + colorizeStamp(drawHorse.selectedStamp.url, drawHorse.selectedColor);
       img.onload = function() {
-        drawHorse.ctx.drawImage(img, drawHorse.pos.x - 25, drawHorse.pos.y - 25, 50, 50);
+        drawHorse.ctx.drawImage(img, drawHorse.pos.x - halfStamp, drawHorse.pos.y - halfStamp, stampPx, stampPx);
       };
     },
     stopDrawing(_e) {
@@ -193,7 +197,7 @@
   function colorizeBubbleSvg(base64, color) {
     return window.btoa(window.atob(base64).replaceAll("%%%%", color));
   }
-  var settings2 = {
+  var settings = {
     size: 35,
     sizeVariation: 15,
     maxNumberBubbles: 30
@@ -203,27 +207,27 @@
     button: document.getElementById("bubbles"),
     drawsImmediately: true,
     selectable: true,
-    settings: settings2,
+    settings,
     onclick(_e) {
       playSound("clickSound");
       drawHorse.showColorSelectors();
       drawHorse.hideStampSelectors();
     },
     draw(_e) {
-      const totalBubbles = Math.floor(Math.random() * settings2.maxNumberBubbles);
+      const totalBubbles = Math.floor(Math.random() * settings.maxNumberBubbles);
       for (let i = 0; i < totalBubbles; i++) {
-        const img = new Image(settings2.size, settings2.size);
+        const img = new Image(settings.size, settings.size);
         const bubbleChoice = Math.random();
         const base64 = bubbleChoice < 0.33 ? BUBBLE_BASE64_1 : bubbleChoice < 0.5 ? BUBBLE_BASE64_2 : BUBBLE_BASE64_3;
         const positive = Math.floor(Math.random() * 2) % 2 === 0 ? -1 : 1;
-        const xOffset = positive * Math.floor(Math.random() * (i * settings2.size));
-        const yOffset = Math.floor(Math.random() * (i * settings2.size));
+        const xOffset = positive * Math.floor(Math.random() * (i * settings.size));
+        const yOffset = Math.floor(Math.random() * (i * settings.size));
         const bubbleSizeSign = Math.floor(Math.random() * 2) % 2 === 0 ? -1 : 1;
         const bubbleSize = Math.floor(
-          settings2.size + bubbleSizeSign * Math.floor(Math.random() * settings2.sizeVariation)
+          settings.size + bubbleSizeSign * Math.floor(Math.random() * settings.sizeVariation)
         );
-        const drawX = drawHorse.pos.x - settings2.size / 2 + xOffset;
-        const drawY = drawHorse.pos.y - settings2.size / 2 - yOffset;
+        const drawX = drawHorse.pos.x - settings.size / 2 + xOffset;
+        const drawY = drawHorse.pos.y - settings.size / 2 - yOffset;
         const bubbleCenterY = drawY + bubbleSize / 2;
         const color = drawHorse.selectedColor === "rainbow" ? getRainbowColorForY(bubbleCenterY, drawHorse.ctx.canvas.height) : drawHorse.selectedColor;
         img.src = "data:image/svg+xml;base64," + colorizeBubbleSvg(base64, color);
@@ -237,23 +241,12 @@
   };
 
   // src/tools/eraser.ts
-  var settings3 = {
-    width: 5,
-    controls: [
-      { id: "increase", name: "+", onclick: () => {
-        settings3.width--;
-      } },
-      { id: "decrease", name: "+", onclick: () => {
-        settings3.width++;
-      } }
-    ]
-  };
   var eraser = {
     name: "eraser",
     button: document.getElementById("eraser"),
     drawsImmediately: false,
     selectable: true,
-    settings: settings3,
+    usesSize: true,
     onclick(_e) {
       playSound("clickSound");
       drawHorse.showColorSelectors();
@@ -262,7 +255,7 @@
     draw(e) {
       playSound("eraserSound");
       drawHorse.ctx.beginPath();
-      drawHorse.ctx.lineWidth = 5;
+      drawHorse.ctx.lineWidth = drawHorse.brushSize;
       drawHorse.ctx.lineCap = "round";
       drawHorse.ctx.strokeStyle = "white";
       drawHorse.ctx.moveTo(drawHorse.pos.x, drawHorse.pos.y);
@@ -522,6 +515,7 @@
     canvasWidth: 0,
     canvasHeight: 0,
     stamps,
+    brushSize: SIZE_DEFAULT,
     setPosition(e) {
       if (e.target === drawHorse.canvas) e.preventDefault();
       const bcr = e.target.getBoundingClientRect();
@@ -567,6 +561,39 @@
       drawHorse.ctx.fillStyle = "white";
       drawHorse.ctx.fillRect(0, 0, drawHorse.ctx.canvas.width, drawHorse.ctx.canvas.height);
     },
+    // Sync the size UI: enable +/- only for tools that honor the global brush size,
+    // and redraw the preview dot. `feedback` plays a pop (size changed) or nudge (hit a limit).
+    updateSizeControls(feedback) {
+      const enabled = !!drawHorse.currentTool.usesSize;
+      for (const id of ["size-increase", "size-decrease"]) {
+        const btn = document.getElementById(id);
+        if (btn) btn.disabled = !enabled;
+      }
+      const preview = document.getElementById("size-preview");
+      const dot = document.getElementById("size-dot");
+      if (!preview || !dot) return;
+      preview.classList.toggle("disabled", !enabled);
+      preview.dataset.size = String(drawHorse.brushSize);
+      preview.title = `Size ${drawHorse.brushSize}`;
+      const px = Math.round(4 + drawHorse.brushSize * 0.78);
+      dot.style.width = dot.style.height = `${px}px`;
+      if (feedback) {
+        dot.classList.remove("pop", "nudge");
+        void dot.offsetWidth;
+        dot.classList.add(feedback);
+      }
+    },
+    changeSize(direction) {
+      const before = drawHorse.brushSize;
+      drawHorse.brushSize = nextSize(before, direction);
+      const click = document.getElementById("clickSound");
+      if (click) {
+        click.currentTime = 0;
+        void click.play()?.catch?.(() => {
+        });
+      }
+      drawHorse.updateSizeControls(drawHorse.brushSize === before ? "nudge" : "pop");
+    },
     addListeners() {
       window.addEventListener("resize", drawHorse.resize);
       document.addEventListener(
@@ -582,11 +609,24 @@
             }
             toolEl.classList.add("selectedControl");
             drawHorse.currentTool = tool;
+            drawHorse.updateSizeControls();
           }
           tool.onclick(e);
         },
         false
       );
+      const sizeIncreaseBtn = document.getElementById("size-increase");
+      const sizeDecreaseBtn = document.getElementById("size-decrease");
+      if (sizeIncreaseBtn) {
+        sizeIncreaseBtn.addEventListener("click", () => {
+          drawHorse.changeSize(1);
+        });
+      }
+      if (sizeDecreaseBtn) {
+        sizeDecreaseBtn.addEventListener("click", () => {
+          drawHorse.changeSize(-1);
+        });
+      }
       document.querySelectorAll(".category").forEach((btn) => {
         btn.addEventListener("click", (e) => {
           const cat = e.currentTarget.dataset.category;
@@ -706,6 +746,7 @@
     drawHorse.ctx = drawHorse.canvas.getContext("2d");
     drawHorse.resize();
     drawHorse.addListeners();
+    drawHorse.updateSizeControls();
     document.querySelector('.category[data-category="pen"]')?.click();
     drawHorse.setupStamps();
     drawHorse.setupTools();

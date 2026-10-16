@@ -3,6 +3,7 @@ import type { DrawHorseContext, Tool, Stamp } from './types'
 import { tools } from './tools/index'
 import { stamps } from './stamps'
 import { colorizeStamp } from './tools/stamp/colorize'
+import { SIZE_DEFAULT, nextSize } from './sizeControl'
 
 const noopTool: Tool = {
   name: 'noop',
@@ -31,12 +32,15 @@ export const drawHorse: DrawHorseContext & {
   canvasWidth: number
   canvasHeight: number
   stamps: Record<string, Stamp>
+  brushSize: number
   setPosition: (e: MouseEvent | TouchEvent) => void
   beginPosition: (e: MouseEvent | TouchEvent) => void
   endPosition: (e: MouseEvent | TouchEvent) => void
   draw: (e: MouseEvent | TouchEvent) => void
   resize: () => void
   addListeners: () => void
+  updateSizeControls: (feedback?: 'pop' | 'nudge') => void
+  changeSize: (direction: 1 | -1) => void
   setupColorChooser: () => void
   getColorChoiceClickHandler: (cc: Element) => (e: Event) => void
   makeStampChoiceHandler: (cc: Element) => (e: Event) => void
@@ -62,6 +66,7 @@ export const drawHorse: DrawHorseContext & {
   canvasWidth: 0,
   canvasHeight: 0,
   stamps,
+  brushSize: SIZE_DEFAULT,
 
   setPosition(e) {
     if (e.target === drawHorse.canvas) e.preventDefault()
@@ -114,6 +119,41 @@ export const drawHorse: DrawHorseContext & {
     drawHorse.ctx.fillRect(0, 0, drawHorse.ctx.canvas.width, drawHorse.ctx.canvas.height)
   },
 
+  // Sync the size UI: enable +/- only for tools that honor the global brush size,
+  // and redraw the preview dot. `feedback` plays a pop (size changed) or nudge (hit a limit).
+  updateSizeControls(feedback?: 'pop' | 'nudge') {
+    const enabled = !!drawHorse.currentTool.usesSize
+    for (const id of ['size-increase', 'size-decrease']) {
+      const btn = document.getElementById(id) as HTMLButtonElement | null
+      if (btn) btn.disabled = !enabled
+    }
+    const preview = document.getElementById('size-preview')
+    const dot = document.getElementById('size-dot')
+    if (!preview || !dot) return
+    preview.classList.toggle('disabled', !enabled)
+    preview.dataset.size = String(drawHorse.brushSize)
+    preview.title = `Size ${drawHorse.brushSize}`
+    const px = Math.round(4 + drawHorse.brushSize * 0.78)  // ~7px at default, ~43px at max
+    dot.style.width = dot.style.height = `${px}px`
+    if (feedback) {
+      dot.classList.remove('pop', 'nudge')
+      void dot.offsetWidth  // restart the animation
+      dot.classList.add(feedback)
+    }
+  },
+
+  changeSize(direction: 1 | -1) {
+    const before = drawHorse.brushSize
+    drawHorse.brushSize = nextSize(before, direction)
+    // Same click sound as tool buttons, restarted so rapid presses each get a pop.
+    const click = document.getElementById('clickSound') as HTMLAudioElement | null
+    if (click) {
+      click.currentTime = 0
+      void click.play()?.catch?.(() => {})
+    }
+    drawHorse.updateSizeControls(drawHorse.brushSize === before ? 'nudge' : 'pop')
+  },
+
   addListeners() {
     window.addEventListener('resize', drawHorse.resize)
 
@@ -134,11 +174,26 @@ export const drawHorse: DrawHorseContext & {
           }
           toolEl.classList.add('selectedControl')
           drawHorse.currentTool = tool
+          // Brush size is global and persists across tool changes.
+          drawHorse.updateSizeControls()
         }
         tool.onclick(e)
       },
       false
     )
+
+    const sizeIncreaseBtn = document.getElementById('size-increase')
+    const sizeDecreaseBtn = document.getElementById('size-decrease')
+    if (sizeIncreaseBtn) {
+      sizeIncreaseBtn.addEventListener('click', () => {
+        drawHorse.changeSize(1)
+      })
+    }
+    if (sizeDecreaseBtn) {
+      sizeDecreaseBtn.addEventListener('click', () => {
+        drawHorse.changeSize(-1)
+      })
+    }
 
     document.querySelectorAll('.category').forEach(btn => {
       btn.addEventListener('click', (e) => {
