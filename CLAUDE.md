@@ -130,11 +130,12 @@ Key methods:
 - `setupStamps()` -- dynamically builds `#stampchooser` innerHTML from `stamps` object; assigns click handlers
 - `renderColorChoices()` -- renders `#swatches` from the active palette; each swatch is a `.colorChoice` with `data-color` (hex colors can't be ids)
 - `setupColorChooser()` -- assigns click handlers to `.colorChoice` buttons; color is read from `data-color`. The palette and size buttons deliberately use their own classes (`paletteChoice`, `sizeChoice`) so they are never treated as colors
+- `setupPalettePicker()` -- wires `#palette-next` (above the swatches) and `#palette-prev` (below them); each click plays the click sound and steps the active palette through `PALETTES` ring-buffer style via `cyclePalette()` (wraps both ways)
 - `applyPalette(palette)` -- swaps the active palette; keeps `selectedColor` if the new palette still offers it (rainbow and shared neutrals always do), else falls back to black
 
 ### `window.onload` initialization order (in `src/main.ts`)
 
-1. `renderColorChoices()` (calls `setupColorChooser()`), then `setupPalettePicker()`
+1. `renderColorChoices()` (calls `setupColorChooser()`), then `setupPalettePicker()` (wires the ▶/◀ palette arrows)
 2. Assign `drawHorse.ctx`
 3. `resize()` (handles all canvas sizing; no manual dimension setup)
 4. `addListeners()`

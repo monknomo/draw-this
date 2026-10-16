@@ -1,7 +1,7 @@
 // src/test/drawHorse/palette-apply.test.ts
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { drawHorse } from '../../drawHorse'
-import { PALETTES, DEFAULT_PALETTE } from '../../palettes'
+import { PALETTES, DEFAULT_PALETTE, swatchColors } from '../../palettes'
 
 describe('applyPalette (palette switching)', () => {
   beforeEach(() => {
@@ -95,30 +95,81 @@ describe('applyPalette (palette switching)', () => {
   })
 })
 
-describe('palette button', () => {
-  const paletteButton = () => document.getElementById('palette-button') as HTMLElement
+describe('palette arrows (ring-buffer cycling)', () => {
+  const next = () => document.getElementById('palette-next') as HTMLElement
+  const prev = () => document.getElementById('palette-prev') as HTMLElement
+  const rendered = () =>
+    Array.from(document.querySelectorAll('#swatches .colorChoice')).map(
+      el => (el as HTMLElement).dataset.color
+    )
 
   beforeEach(() => {
+    drawHorse.selectedColor = 'black'
     drawHorse.applyPalette(DEFAULT_PALETTE)
     drawHorse.setupPalettePicker()
   })
 
-  it('is not a color choice (its own class, so the color handler skips it)', () => {
-    expect(paletteButton().classList.contains('colorChoice')).toBe(false)
+  it('are not color choices (own class, so the color handler skips them)', () => {
+    expect(next().classList.contains('colorChoice')).toBe(false)
+    expect(prev().classList.contains('colorChoice')).toBe(false)
   })
 
-  it('does not change the selected color when clicked', () => {
-    ;(document.querySelector('#swatches .colorChoice[data-color="red"]') as HTMLElement).click()
-    expect(drawHorse.selectedColor).toBe('red')
-    paletteButton().click()
-    expect(drawHorse.selectedColor).toBe('red')
+  it('next steps to the following palette and re-renders its swatches', () => {
+    next().click()
+    expect(drawHorse.activePalette).toBe(PALETTES[1])
+    expect(rendered()).toEqual(swatchColors(PALETTES[1]).concat('rainbow'))
+  })
+
+  it('previous steps back to the preceding palette', () => {
+    next().click()
+    next().click()
+    prev().click()
+    expect(drawHorse.activePalette).toBe(PALETTES[1])
+  })
+
+  it('previous from the first palette wraps to the last', () => {
+    prev().click()
+    expect(drawHorse.activePalette).toBe(PALETTES[PALETTES.length - 1])
+  })
+
+  it('next from the last palette wraps to the first', () => {
+    for (let i = 0; i < PALETTES.length - 1; i++) next().click()
+    expect(drawHorse.activePalette).toBe(PALETTES[PALETTES.length - 1])
+    next().click()
+    expect(drawHorse.activePalette).toBe(PALETTES[0])
+  })
+
+  it('one click moves exactly one step, even if the picker was wired twice', () => {
+    drawHorse.setupPalettePicker()
+    drawHorse.setupPalettePicker()
+    next().click()
+    expect(drawHorse.activePalette).toBe(PALETTES[1])
+  })
+
+  it('does not change the selected color when the color exists in every palette', () => {
+    for (const color of ['black', 'rainbow']) {
+      drawHorse.selectedColor = color
+      next().click()
+      expect(drawHorse.selectedColor).toBe(color)
+    }
   })
 
   it('does not steal the selected-swatch highlight', () => {
-    ;(document.querySelector('#swatches .colorChoice[data-color="red"]') as HTMLElement).click()
-    paletteButton().click()
-    expect(paletteButton().classList.contains('selectedColorChoice')).toBe(false)
-    const highlighted = document.querySelector('.selectedColorChoice') as HTMLElement
-    expect(highlighted.dataset.color).toBe('red')
+    drawHorse.selectedColor = 'white'
+    drawHorse.applyPalette(DEFAULT_PALETTE)
+    next().click()
+    expect(next().classList.contains('selectedColorChoice')).toBe(false)
+    expect(prev().classList.contains('selectedColorChoice')).toBe(false)
+    const highlighted = document.querySelectorAll('.selectedColorChoice')
+    expect(highlighted).toHaveLength(1)
+    expect((highlighted[0] as HTMLElement).dataset.color).toBe('white')
+  })
+
+  it('plays the click sound', () => {
+    const play = window.HTMLMediaElement.prototype.play as unknown as ReturnType<typeof vi.fn>
+    play.mockClear()
+    next().click()
+    prev().click()
+    expect(play).toHaveBeenCalledTimes(2)
   })
 })

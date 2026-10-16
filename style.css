@@ -91,15 +91,6 @@ h1 {
   display: none;
 }
 
-/* Palette picker buttons live in the top bar, revealed when the palette button
-   sets data-active-category="palette" (mirrors the category mechanism). */
-#top-tools .palette-choice {
-  display: none;
-}
-#top-tools[data-active-category="palette"] .palette-choice {
-  display: inline-block;
-}
-
 #stampchooser {
   display: none;
   align-items: center;
@@ -223,8 +214,9 @@ button.colorChoice {
 
 /*div.colorChoice {}*/
 
-/* The palette button sits in #colors-col but is not a color: it has its own class so
-   the color-choice handler and selected-swatch highlight never apply to it. */
+/* The palette arrows (next above the swatches, previous below) sit in #colors-col but
+   are not colors: they have their own class so the color-choice handler and
+   selected-swatch highlight never apply to them. */
 button.paletteChoice {
   border: solid .1rem darkgray;
   height: 3em;

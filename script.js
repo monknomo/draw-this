@@ -166,6 +166,12 @@
       ...palette.accentNeutral ? [palette.accentNeutral] : []
     ];
   }
+  function cyclePalette(current, step) {
+    const n = PALETTES.length;
+    const found = PALETTES.findIndex((p) => p.name === current.name);
+    const i = found === -1 ? PALETTES.indexOf(DEFAULT_PALETTE) : found;
+    return PALETTES[(i + step + n) % n];
+  }
 
   // src/tools/stamp/colorize.ts
   function buildRainbowStops(colors) {
@@ -747,25 +753,18 @@
       if (!keep) drawHorse.selectedColor = "black";
       drawHorse.renderColorChoices();
     },
+    // Two arrow buttons step through the palettes like a ring buffer: ▶ (above the
+    // swatches) goes to the next palette, ◀ (below them) to the previous, and both wrap.
+    // Assigned via onclick (not addEventListener) so wiring twice never double-steps.
     setupPalettePicker() {
-      const paletteBtn = document.getElementById("palette-button");
-      const topTools = document.querySelector("#top-tools");
-      if (paletteBtn && topTools) {
-        paletteBtn.addEventListener("click", () => {
-          topTools.dataset.activeCategory = "palette";
-        });
-      }
-      document.querySelectorAll(".palette-choice").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          const name = btn.dataset.palette;
-          const palette = PALETTES.find((p) => p.name === name);
-          if (palette) drawHorse.applyPalette(palette);
-          const activeCategory = document.querySelector(".category.selectedControl")?.dataset.category;
-          if (topTools && activeCategory) {
-            topTools.dataset.activeCategory = activeCategory;
-          }
-        });
-      });
+      const step = (direction) => () => {
+        playSound("clickSound");
+        drawHorse.applyPalette(cyclePalette(drawHorse.activePalette, direction));
+      };
+      const next = document.getElementById("palette-next");
+      const prev = document.getElementById("palette-prev");
+      if (next) next.onclick = step(1);
+      if (prev) prev.onclick = step(-1);
     },
     getColorChoiceClickHandler(cc) {
       return (e) => {

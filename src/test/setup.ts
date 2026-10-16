@@ -16,8 +16,9 @@ document.body.innerHTML = `
     <canvas id="drawHere"></canvas>
   </div>
   <div id="colors-col">
-    <button id="palette-button" class="paletteChoice">🎨</button>
+    <button id="palette-next" class="paletteChoice">▶</button>
     <div id="swatches"></div>
+    <button id="palette-prev" class="paletteChoice">◀</button>
     <button id="size-increase" class="sizeChoice" disabled>+</button>
     <button id="size-decrease" class="sizeChoice" disabled>-</button>
     <div id="size-preview" class="disabled"><span id="size-dot"></span></div>
@@ -42,10 +43,6 @@ document.body.innerHTML = `
     <button id="nuke" class="control tool"></button>
     <button id="bucket" class="control tool" data-category="bucket"></button>
     <button id="screenshot" class="control"></button>
-    <button class="control palette-choice" data-palette="Classic"></button>
-    <button class="control palette-choice" data-palette="Pastel"></button>
-    <button class="control palette-choice" data-palette="Grayscale"></button>
-    <button class="control palette-choice" data-palette="Neon"></button>
   </div>
   <div id="category-col">
     <button class="control category" data-category="pen">pen</button>

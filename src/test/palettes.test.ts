@@ -1,6 +1,6 @@
 // src/test/palettes.test.ts
 import { describe, it, expect } from 'vitest'
-import { PALETTES, SHARED_NEUTRALS, DEFAULT_PALETTE, swatchColors } from '../palettes'
+import { PALETTES, SHARED_NEUTRALS, DEFAULT_PALETTE, swatchColors, cyclePalette } from '../palettes'
 
 describe('palette data invariants', () => {
   it('ships exactly four palettes', () => {
@@ -65,5 +65,45 @@ describe('swatchColors', () => {
 
   it('always includes black, so it is a safe fallback color', () => {
     for (const p of PALETTES) expect(swatchColors(p)).toContain('black')
+  })
+})
+
+describe('cyclePalette (ring buffer)', () => {
+  const first = PALETTES[0]
+  const last = PALETTES[PALETTES.length - 1]
+
+  it('steps forward to the next palette', () => {
+    expect(cyclePalette(PALETTES[0], 1)).toBe(PALETTES[1])
+    expect(cyclePalette(PALETTES[1], 1)).toBe(PALETTES[2])
+  })
+
+  it('steps back to the previous palette', () => {
+    expect(cyclePalette(PALETTES[2], -1)).toBe(PALETTES[1])
+    expect(cyclePalette(PALETTES[1], -1)).toBe(PALETTES[0])
+  })
+
+  it('wraps from the last palette forward to the first', () => {
+    expect(cyclePalette(last, 1)).toBe(first)
+  })
+
+  it('wraps from the first palette back to the last', () => {
+    expect(cyclePalette(first, -1)).toBe(last)
+  })
+
+  it('visits every palette exactly once in a full lap, in either direction', () => {
+    for (const step of [1, -1] as const) {
+      const seen = new Set<string>()
+      let p = first
+      for (let i = 0; i < PALETTES.length; i++) {
+        seen.add(p.name)
+        p = cyclePalette(p, step)
+      }
+      expect(seen.size).toBe(PALETTES.length)
+      expect(p).toBe(first)
+    }
+  })
+
+  it('forward then back returns to the start', () => {
+    for (const p of PALETTES) expect(cyclePalette(cyclePalette(p, 1), -1)).toBe(p)
   })
 })

@@ -4,7 +4,8 @@ import { tools } from './tools/index'
 import { stamps } from './stamps'
 import { colorizeStamp } from './tools/stamp/colorize'
 import { SIZE_DEFAULT, nextSize } from './sizeControl'
-import { PALETTES, DEFAULT_PALETTE, swatchColors, type Palette } from './palettes'
+import { DEFAULT_PALETTE, swatchColors, cyclePalette, type Palette } from './palettes'
+import { playSound } from './sounds'
 
 const noopTool: Tool = {
   name: 'noop',
@@ -297,31 +298,18 @@ export const drawHorse: DrawHorseContext & {
     drawHorse.renderColorChoices()
   },
 
+  // Two arrow buttons step through the palettes like a ring buffer: ▶ (above the
+  // swatches) goes to the next palette, ◀ (below them) to the previous, and both wrap.
+  // Assigned via onclick (not addEventListener) so wiring twice never double-steps.
   setupPalettePicker() {
-    // The palette button (top of #colors-col) reveals the palette buttons in the
-    // top bar, reusing the existing category mechanism (data-active-category).
-    const paletteBtn = document.getElementById('palette-button')
-    const topTools = document.querySelector('#top-tools') as HTMLElement | null
-    if (paletteBtn && topTools) {
-      paletteBtn.addEventListener('click', () => {
-        topTools.dataset.activeCategory = 'palette'
-      })
+    const step = (direction: 1 | -1) => () => {
+      playSound('clickSound')
+      drawHorse.applyPalette(cyclePalette(drawHorse.activePalette, direction))
     }
-
-    // Each palette button applies its palette, then returns the top bar to the
-    // currently-selected tool category.
-    document.querySelectorAll<HTMLElement>('.palette-choice').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const name = btn.dataset.palette
-        const palette = PALETTES.find(p => p.name === name)
-        if (palette) drawHorse.applyPalette(palette)
-        const activeCategory =
-          document.querySelector<HTMLElement>('.category.selectedControl')?.dataset.category
-        if (topTools && activeCategory) {
-          topTools.dataset.activeCategory = activeCategory
-        }
-      })
-    })
+    const next = document.getElementById('palette-next')
+    const prev = document.getElementById('palette-prev')
+    if (next) next.onclick = step(1)
+    if (prev) prev.onclick = step(-1)
   },
 
   getColorChoiceClickHandler(cc) {

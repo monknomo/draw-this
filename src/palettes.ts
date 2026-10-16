@@ -51,3 +51,13 @@ export function swatchColors(palette: Palette): string[] {
     ...(palette.accentNeutral ? [palette.accentNeutral] : []),
   ]
 }
+
+// Ring-buffer step through PALETTES: +1 is next, -1 is previous, and both wrap, so the
+// last palette's next is the first and the first palette's previous is the last.
+// A palette that isn't in the list (shouldn't happen) is treated as the default.
+export function cyclePalette(current: Palette, step: 1 | -1): Palette {
+  const n = PALETTES.length
+  const found = PALETTES.findIndex(p => p.name === current.name)
+  const i = found === -1 ? PALETTES.indexOf(DEFAULT_PALETTE) : found
+  return PALETTES[(i + step + n) % n]
+}

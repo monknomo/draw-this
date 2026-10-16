@@ -24,7 +24,7 @@ window.onload = (_event) => {
   // Render swatches for the default (Classic) palette and wire click handlers
   drawHorse.renderColorChoices()
 
-  // Wire the palette picker (palette button + palette buttons in the top bar)
+  // Wire the palette arrows (next above the swatches, previous below)
   drawHorse.setupPalettePicker()
 
   // Assign canvas 2D context
