@@ -120,10 +120,59 @@ button#size-increase {
   margin-top: 0.5em;
 }
 
-button#size-increase,
-button#size-decrease {
+button.sizeChoice {
+  border: solid .1rem darkgray;
+  height: 3em;
+  width: 3em;
   background-color: #FFF483;
   font-weight: bold;
+}
+
+button.sizeChoice:active:not(:disabled) {
+  transform: scale(0.92);
+  background-color: #FFE24A;
+}
+
+/* Live preview of the current brush size. */
+#size-preview {
+  box-sizing: border-box;
+  height: 3em;
+  width: 3em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #fff;
+  border: solid .1rem darkgray;
+}
+
+#size-preview.disabled {
+  opacity: 0.35;
+}
+
+#size-dot {
+  display: block;
+  border-radius: 50%;
+  background-color: #222;
+}
+
+#size-dot.pop { animation: sizePop 0.2s ease-out; }
+#size-dot.nudge { animation: sizeNudge 0.2s ease-out; }
+
+@keyframes sizePop {
+  0% { transform: scale(0.6); }
+  60% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+@keyframes sizeNudge {
+  25% { translate: -3px 0; }
+  75% { translate: 3px 0; }
+}
+
+/* Size only applies to some tools (pencil, eraser, drips, stamp); dim it for the rest. */
+button.sizeChoice:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
 }
 
 button.control {
