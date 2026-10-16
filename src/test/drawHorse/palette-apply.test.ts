@@ -77,13 +77,13 @@ describe('applyPalette (palette switching)', () => {
     ])
   })
 
-  it('omits the accent swatch for palettes without an accent neutral', () => {
-    const grayscale = PALETTES.find(p => p.name === 'Grayscale')!
-    drawHorse.applyPalette(grayscale)
-    const rendered = Array.from(
-      document.querySelectorAll('#swatches .colorChoice')
-    ).map(el => (el as HTMLElement).dataset.color)
-    expect(rendered).toEqual([...grayscale.colors, 'black', 'white', 'rainbow'])
+  it('renders the same number of swatches for every palette', () => {
+    const counts = PALETTES.map(p => {
+      drawHorse.applyPalette(p)
+      return document.querySelectorAll('#swatches .colorChoice').length
+    })
+    expect(new Set(counts).size, `swatch counts differ: ${counts.join(', ')}`).toBe(1)
+    expect(counts[0]).toBe(11) // 7 colors + black + white + accent + rainbow
   })
 
   it('highlights the fallback swatch when the color is not carried over', () => {

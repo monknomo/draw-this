@@ -18,16 +18,23 @@ describe('palette data invariants', () => {
     }
   })
 
-  it('defines an accent neutral only on Classic and Pastel', () => {
-    const withAccent = PALETTES.filter(p => p.accentNeutral !== undefined).map(p => p.name)
-    expect(new Set(withAccent)).toEqual(new Set(['Classic', 'Pastel']))
+  it('every palette defines an accent neutral', () => {
+    for (const p of PALETTES) {
+      expect(p.accentNeutral, `${p.name} needs an accent neutral`).toBeTruthy()
+    }
   })
 
-  it('omits the accent neutral on Grayscale and Neon', () => {
-    const grayscale = PALETTES.find(p => p.name === 'Grayscale')!
-    const neon = PALETTES.find(p => p.name === 'Neon')!
-    expect(grayscale.accentNeutral).toBeUndefined()
-    expect(neon.accentNeutral).toBeUndefined()
+  it('every palette offers the same number of swatches', () => {
+    const counts = PALETTES.map(p => swatchColors(p).length)
+    expect(new Set(counts).size, `swatch counts differ: ${counts.join(', ')}`).toBe(1)
+    expect(counts[0]).toBe(10) // 7 colors + black + white + accent
+  })
+
+  it('no palette repeats a swatch color (accent and neutrals included)', () => {
+    for (const p of PALETTES) {
+      const all = swatchColors(p).map(c => c.toLowerCase())
+      expect(new Set(all).size, `${p.name} has a duplicate swatch`).toBe(all.length)
+    }
   })
 
   it('reproduces the classic ROYGBIV+purple order', () => {
@@ -58,9 +65,9 @@ describe('swatchColors', () => {
     ])
   })
 
-  it('omits the accent slot when the palette has none', () => {
-    const grayscale = PALETTES.find(p => p.name === 'Grayscale')!
-    expect(swatchColors(grayscale)).toEqual([...grayscale.colors, ...SHARED_NEUTRALS])
+  it('has the same length for every palette', () => {
+    const lengths = new Set(PALETTES.map(p => swatchColors(p).length))
+    expect(lengths.size).toBe(1)
   })
 
   it('always includes black, so it is a safe fallback color', () => {

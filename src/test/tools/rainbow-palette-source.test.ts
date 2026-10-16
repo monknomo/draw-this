@@ -15,6 +15,7 @@ import { DEFAULT_PALETTE, type Palette } from '../../palettes'
 const TEST_PALETTE: Palette = {
   name: 'TestPalette',
   colors: ['#111111', '#222222', '#333333', '#444444', '#555555', '#666666', '#777777'],
+  accentNeutral: '#888888',
 }
 
 describe('rainbow color source follows the active palette', () => {

@@ -7,12 +7,14 @@
 // A Palette is 7 ordered chromatic colors. The ORDER is meaningful — it is the
 // source for every rainbow mode (pencil stripes, drip cycling, stamp gradient,
 // bubble slices). `black` and `white` are shared neutrals shown on every
-// palette; `accentNeutral` is an optional per-palette extra ("brown" slot).
+// palette; `accentNeutral` is a required per-palette extra ("brown" slot). Because it
+// is required, every palette offers the same number of swatches (7 + 2 + 1 = 10), so the
+// color column keeps its height and the palette arrows never jump when cycling.
 
 export interface Palette {
   name: string           // display name + stable key, e.g. 'Classic'
   colors: string[]       // exactly 7 ordered CSS colors — the rainbow source
-  accentNeutral?: string // optional per-palette extra neutral ("brown" slot)
+  accentNeutral: string  // required per-palette extra neutral ("brown" slot)
 }
 
 export const PALETTES: Palette[] = [
@@ -30,10 +32,12 @@ export const PALETTES: Palette[] = [
     name: 'Grayscale',
     // Intentionally avoids pure #000/#fff so it doesn't duplicate the shared neutrals.
     colors: ['#f2f2f2', '#cccccc', '#a6a6a6', '#808080', '#595959', '#404040', '#1a1a1a'],
+    accentNeutral: '#704214', // sepia, the monochrome-photo tone
   },
   {
     name: 'Neon',
     colors: ['#ff2d95', '#ff5e00', '#ccff00', '#39ff14', '#00e5ff', '#2d5cff', '#c400ff'],
+    accentNeutral: '#26215c', // midnight indigo
   },
 ]
 
@@ -45,11 +49,7 @@ export const DEFAULT_PALETTE = PALETTES[0]
 // separate: it is always present and is not a color). Single source of truth for
 // both swatch rendering and "is this color still available after a palette swap?".
 export function swatchColors(palette: Palette): string[] {
-  return [
-    ...palette.colors,
-    ...SHARED_NEUTRALS,
-    ...(palette.accentNeutral ? [palette.accentNeutral] : []),
-  ]
+  return [...palette.colors, ...SHARED_NEUTRALS, palette.accentNeutral]
 }
 
 // Ring-buffer step through PALETTES: +1 is next, -1 is previous, and both wrap, so the

@@ -150,21 +150,21 @@
     {
       name: "Grayscale",
       // Intentionally avoids pure #000/#fff so it doesn't duplicate the shared neutrals.
-      colors: ["#f2f2f2", "#cccccc", "#a6a6a6", "#808080", "#595959", "#404040", "#1a1a1a"]
+      colors: ["#f2f2f2", "#cccccc", "#a6a6a6", "#808080", "#595959", "#404040", "#1a1a1a"],
+      accentNeutral: "#704214"
+      // sepia, the monochrome-photo tone
     },
     {
       name: "Neon",
-      colors: ["#ff2d95", "#ff5e00", "#ccff00", "#39ff14", "#00e5ff", "#2d5cff", "#c400ff"]
+      colors: ["#ff2d95", "#ff5e00", "#ccff00", "#39ff14", "#00e5ff", "#2d5cff", "#c400ff"],
+      accentNeutral: "#26215c"
+      // midnight indigo
     }
   ];
   var SHARED_NEUTRALS = ["black", "white"];
   var DEFAULT_PALETTE = PALETTES[0];
   function swatchColors(palette) {
-    return [
-      ...palette.colors,
-      ...SHARED_NEUTRALS,
-      ...palette.accentNeutral ? [palette.accentNeutral] : []
-    ];
+    return [...palette.colors, ...SHARED_NEUTRALS, palette.accentNeutral];
   }
   function cyclePalette(current, step) {
     const n = PALETTES.length;
