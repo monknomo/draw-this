@@ -4,6 +4,8 @@ import { tools } from './tools/index'
 import { stamps } from './stamps'
 import { colorizeStamp } from './tools/stamp/colorize'
 import { SIZE_DEFAULT, nextSize } from './sizeControl'
+import { DEFAULT_PALETTE, swatchColors, cyclePalette, equivalentColor, type Palette } from './palettes'
+import { playSound } from './sounds'
 
 const noopTool: Tool = {
   name: 'noop',
@@ -25,6 +27,7 @@ export const drawHorse: DrawHorseContext & {
   ctx: CanvasRenderingContext2D
   currentTool: Tool
   selectedColor: string
+  activePalette: Palette
   selectedStamp: Stamp | undefined
   undoStack: ImageData[]
   pos: { x: number; y: number }
@@ -42,6 +45,9 @@ export const drawHorse: DrawHorseContext & {
   updateSizeControls: (feedback?: 'pop' | 'nudge') => void
   changeSize: (direction: 1 | -1) => void
   setupColorChooser: () => void
+  renderColorChoices: () => void
+  applyPalette: (palette: Palette) => void
+  setupPalettePicker: () => void
   getColorChoiceClickHandler: (cc: Element) => (e: Event) => void
   makeStampChoiceHandler: (cc: Element) => (e: Event) => void
   setupStamps: () => void
@@ -57,6 +63,7 @@ export const drawHorse: DrawHorseContext & {
   // Known bug preserved: selectedColor appears twice in script.js (lines 472 and 478).
   // JavaScript uses the last definition; TypeScript only allows one — behavior is identical.
   selectedColor: 'black',
+  activePalette: DEFAULT_PALETTE,
   currentTool: undefined as unknown as Tool,  // set to tools.pencil in main.ts during initialization
   selectedStamp: undefined,
   undoStack: [],
@@ -243,6 +250,33 @@ export const drawHorse: DrawHorseContext & {
     })
   },
 
+  // Render swatches dynamically from the active palette. Each swatch stores its
+  // color in a data-color attribute (colors may be hex, which can't be an element
+  // id or id-selector) and is painted via inline style.backgroundColor. The rainbow
+  // swatch is special: data-color="rainbow", its gradient look comes from CSS.
+  renderColorChoices() {
+    const container = document.getElementById('swatches')
+    if (!container) return
+
+    let html = swatchColors(drawHorse.activePalette)
+      .map(
+        color =>
+          `<button class="colorChoice" data-color="${color}" ` +
+          `style="background-color:${color}"></button>`
+      )
+      .join('')
+    html += `<button id="rainbow" class="colorChoice" data-color="rainbow"></button>`
+    container.innerHTML = html
+
+    drawHorse.setupColorChooser()
+
+    // Restore/initialize the selected-swatch highlight for the current selectedColor.
+    const selected = container.querySelector(
+      `.colorChoice[data-color="${drawHorse.selectedColor}"]`
+    )
+    if (selected) selected.classList.add('selectedColorChoice')
+  },
+
   setupColorChooser() {
     drawHorse.colorChoices = document.getElementsByClassName('colorChoice')
     for (let i = 0; i < drawHorse.colorChoices.length; i++) {
@@ -251,14 +285,41 @@ export const drawHorse: DrawHorseContext & {
     }
   },
 
+  // Apply a palette: set state and re-render swatches. The selected color is translated
+  // to its equivalent slot in the new palette (red -> pastel pink -> ...); black, white
+  // and rainbow stay as they are. renderColorChoices() restores the swatch highlight.
+  applyPalette(palette) {
+    drawHorse.selectedColor = equivalentColor(
+      drawHorse.selectedColor,
+      drawHorse.activePalette,
+      palette
+    )
+    drawHorse.activePalette = palette
+    drawHorse.renderColorChoices()
+  },
+
+  // Two arrow buttons step through the palettes like a ring buffer: ▶ (above the
+  // swatches) goes to the next palette, ◀ (below them) to the previous, and both wrap.
+  // Assigned via onclick (not addEventListener) so wiring twice never double-steps.
+  setupPalettePicker() {
+    const step = (direction: 1 | -1) => () => {
+      playSound('clickSound')
+      drawHorse.applyPalette(cyclePalette(drawHorse.activePalette, direction))
+    }
+    const next = document.getElementById('palette-next')
+    const prev = document.getElementById('palette-prev')
+    if (next) next.onclick = step(1)
+    if (prev) prev.onclick = step(-1)
+  },
+
   getColorChoiceClickHandler(cc) {
     return (e) => {
-      drawHorse.selectedColor = (cc as HTMLElement).id
+      drawHorse.selectedColor = (cc as HTMLElement).dataset.color ?? ''
       const colorChoiceControls = document.getElementsByClassName('colorChoice')
       for (let i = 0; i < colorChoiceControls.length; i++) {
         colorChoiceControls[i].classList.remove('selectedColorChoice')
       }
-      ;(e.target as Element).classList.add('selectedColorChoice')
+      ;(e.currentTarget as Element).classList.add('selectedColorChoice')
     }
   },
 
@@ -271,7 +332,11 @@ export const drawHorse: DrawHorseContext & {
   setupStamps() {
     Object.entries(drawHorse.stamps).forEach(([_key, value]) => {
       const stampchooser = document.getElementById('stampchooser')!
-      const colorized = colorizeStamp(value.url, drawHorse.selectedColor)
+      const colorized = colorizeStamp(
+        value.url,
+        drawHorse.selectedColor,
+        drawHorse.activePalette.colors
+      )
       stampchooser.innerHTML +=
         `<button id='${value.id}' class='stampchoice'>` +
         `<img width='30px' max-width='30px' max-height='30px' ` +
@@ -304,7 +369,10 @@ export const drawHorse: DrawHorseContext & {
   },
 
   showColorSelectors() {
-    const colorchooser = document.getElementById('colorchooser')!
-    colorchooser.style.display = ''
+    // The layout refactor renamed #colorchooser → #colors-col and colors are now
+    // always visible. Guard the lookup so tool onclick handlers don't throw when
+    // the element is absent; there is nothing to toggle.
+    const colorsCol = document.getElementById('colors-col')
+    if (colorsCol) colorsCol.style.display = ''
   },
 }

@@ -2,12 +2,15 @@
 // Runs against the built script.js (see setup.ts), driven through the real DOM.
 const dh = () => (globalThis as any).__drawHorse
 const click = (id: string) => (document.getElementById(id) as HTMLElement).click()
+// Swatches are rendered from the active palette and carry data-color, not an id.
+const pick = (color: string) =>
+  (document.querySelector(`#swatches .colorChoice[data-color="${color}"]`) as HTMLElement).click()
 const btn = (id: string) => document.getElementById(id) as HTMLButtonElement
 
 describe('size +/- buttons', () => {
   beforeEach(() => {
     click('pencil')
-    click('red')
+    pick('red')
     dh().brushSize = 5  // size persists across tools now, so pin it per test
   })
 
@@ -20,7 +23,7 @@ describe('size +/- buttons', () => {
   })
 
   it('do not change the selected colour when rainbow is active', () => {
-    click('rainbow')
+    pick('rainbow')
     click('size-increase')
     expect(dh().selectedColor).toBe('rainbow')
   })

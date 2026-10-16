@@ -214,43 +214,26 @@ button.colorChoice {
 
 /*div.colorChoice {}*/
 
+/* The palette arrows (next above the swatches, previous below) sit in #colors-col but
+   are not colors: they have their own class so the color-choice handler and
+   selected-swatch highlight never apply to them. */
+button.paletteChoice {
+  border: solid .1rem darkgray;
+  height: 3em;
+  width: 3em;
+  background-color: #FFF483;
+}
+
+button.paletteChoice:active {
+  transform: scale(0.92);
+  background-color: #FFE24A;
+}
+
 button.selectedColorChoice {
   border: solid .15rem pink;
 }
 
-button#red{
-  background-color: red;
-}
-button#orange{
-  background-color: orange;
-}
-button#yellow{
-  background-color: yellow;
-}
-button#green{
-  background-color: green;
-}
-button#blue{
-  background-color: blue;
-}
-button#violet{
-  background-color: violet;
-}
-button#purple{
-  background-color: purple;
-}
-button#black{
-  background-color:black;
-}
-button#white{
-  background-color:white;
-}
-
-button#saddlebrown{
-  background-color:saddlebrown;
-}
-
-button#rainbow{
-  background: linear-gradient(to bottom, red, orange, yellow, green, blue, pink, purple);
-}
+/* Per-color swatch backgrounds are now applied inline via style.backgroundColor
+   from the active palette (colors may be hex, which can't be an id selector).
+   Only the special rainbow swatch keeps a CSS gradient (see button#rainbow above). */
 

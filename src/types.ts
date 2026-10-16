@@ -1,4 +1,5 @@
 // src/types.ts
+import type { Palette } from './palettes'
 
 export interface ToolSettings {
   size?: number
@@ -31,6 +32,7 @@ export interface DrawHorseContext {
   ctx: CanvasRenderingContext2D
   pos: { x: number; y: number }
   selectedColor: string
+  activePalette: Palette
   selectedStamp: Stamp | undefined
   undoStack: ImageData[]
   brushSize: number

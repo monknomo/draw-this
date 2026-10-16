@@ -40,6 +40,7 @@ Open `index.html` directly in a browser after building. Changes to `style.css` o
 | File | Purpose |
 |---|---|
 | `src/types.ts` | Shared interfaces: `Tool`, `ToolSettings`, `Stamp`, `DrawHorseContext` |
+| `src/palettes.ts` | Swappable color palettes (7 ordered colors each; the order is the rainbow source for every tool). No imports, so tools can use it without circular-import risk |
 | `src/sounds.ts` | `playSound(id)` / `pauseSound(id)` -- operate on `<audio>` DOM elements |
 | `src/stamps.ts` | Stamp data: 8 active stamps as `{id, name, url}` objects with base64 SVGs |
 | `src/drawHorse.ts` | Main application state object and event routing |
@@ -127,11 +128,14 @@ Key methods:
 - `resize()` -- sizes canvas to `0.95 * (window.innerHeight - header.offsetHeight - topbar.offsetHeight)`. `#topbar` is looked up lazily via `document.getElementById('topbar')`; if absent, falls back to 0.
 - `addListeners()` -- registers all mouse and touch events, plus the click handler for `.category` buttons (drives `#top-tools[data-active-category]` and `selectedControl` state). Event host for the plugin system.
 - `setupStamps()` -- dynamically builds `#stampchooser` innerHTML from `stamps` object; assigns click handlers
-- `setupColorChooser()` -- assigns click handlers to `.colorChoice` buttons; color is read from `button.id`
+- `renderColorChoices()` -- renders `#swatches` from the active palette; each swatch is a `.colorChoice` with `data-color` (hex colors can't be ids)
+- `setupColorChooser()` -- assigns click handlers to `.colorChoice` buttons; color is read from `data-color`. The palette and size buttons deliberately use their own classes (`paletteChoice`, `sizeChoice`) so they are never treated as colors
+- `setupPalettePicker()` -- wires `#palette-next` (above the swatches) and `#palette-prev` (below them); each click plays the click sound and steps the active palette through `PALETTES` ring-buffer style via `cyclePalette()` (wraps both ways)
+- `applyPalette(palette)` -- swaps the active palette and translates `selectedColor` to the equivalent swatch slot of the new palette (`equivalentColor()`; slot i is the same role in every palette, and every palette has the same number of swatches); rainbow is left alone
 
 ### `window.onload` initialization order (in `src/main.ts`)
 
-1. `setupColorChooser()`
+1. `renderColorChoices()` (calls `setupColorChooser()`), then `setupPalettePicker()` (wires the ▶/◀ palette arrows)
 2. Assign `drawHorse.ctx`
 3. `resize()` (handles all canvas sizing; no manual dimension setup)
 4. `addListeners()`

@@ -30,7 +30,6 @@
   }
 
   // src/tools/pencil.ts
-  var RAINBOW_COLORS = ["red", "orange", "yellow", "green", "blue", "pink", "purple"];
   var pencil = {
     name: "pencil",
     button: document.getElementById("pencil"),
@@ -55,8 +54,10 @@
         const stripeWidth = rainbowStripeWidth(drawHorse.brushSize);
         const cosP = Math.cos(perpAngle);
         const sinP = Math.sin(perpAngle);
-        RAINBOW_COLORS.forEach((color, i) => {
-          const offset = (i - 3) * stripeWidth;
+        const rainbowColors = drawHorse.activePalette.colors;
+        const center = Math.floor(rainbowColors.length / 2);
+        rainbowColors.forEach((color, i) => {
+          const offset = (i - center) * stripeWidth;
           drawHorse.ctx.beginPath();
           drawHorse.ctx.lineWidth = stripeWidth;
           drawHorse.ctx.lineCap = "round";
@@ -82,7 +83,6 @@
   };
 
   // src/tools/drips.ts
-  var RAINBOW_COLORS2 = ["red", "orange", "yellow", "green", "blue", "violet", "purple"];
   var rainbowIndex = 0;
   function getDripSize() {
     let size = 0;
@@ -112,7 +112,8 @@
     draw(e) {
       playSound("drippingSound");
       drawHorse.setPosition(e);
-      const color = drawHorse.selectedColor === "rainbow" ? RAINBOW_COLORS2[rainbowIndex++ % RAINBOW_COLORS2.length] : drawHorse.selectedColor;
+      const rainbowColors = drawHorse.activePalette.colors;
+      const color = drawHorse.selectedColor === "rainbow" ? rainbowColors[rainbowIndex++ % rainbowColors.length] : drawHorse.selectedColor;
       drawHorse.ctx.fillStyle = color;
       drawHorse.ctx.beginPath();
       const sizeMultiplier = drawHorse.brushSize / SIZE_DEFAULT;
@@ -133,28 +134,71 @@
     getDripSize
   };
 
-  // src/tools/stamp/colorize.ts
-  var RAINBOW_STOPS = [
-    { offset: "0%", color: "red" },
-    { offset: "16.7%", color: "orange" },
-    { offset: "33.3%", color: "yellow" },
-    { offset: "50%", color: "green" },
-    { offset: "66.7%", color: "blue" },
-    { offset: "83.3%", color: "hotpink" },
-    { offset: "100%", color: "purple" }
+  // src/palettes.ts
+  var PALETTES = [
+    {
+      name: "Classic",
+      colors: ["red", "orange", "yellow", "green", "blue", "violet", "purple"],
+      accentNeutral: "saddlebrown"
+    },
+    {
+      name: "Pastel",
+      colors: ["#ffb3c6", "#ffd9b3", "#fff2b3", "#b3ffcc", "#b3e0ff", "#d9b3ff", "#e0b3d9"],
+      accentNeutral: "#d2b48c"
+      // tan
+    },
+    {
+      name: "Grayscale",
+      // Intentionally avoids pure #000/#fff so it doesn't duplicate the shared neutrals.
+      colors: ["#f2f2f2", "#cccccc", "#a6a6a6", "#808080", "#595959", "#404040", "#1a1a1a"],
+      accentNeutral: "#704214"
+      // sepia, the monochrome-photo tone
+    },
+    {
+      name: "Neon",
+      colors: ["#ff2d95", "#ff5e00", "#ccff00", "#39ff14", "#00e5ff", "#2d5cff", "#c400ff"],
+      accentNeutral: "#26215c"
+      // midnight indigo
+    }
   ];
-  function buildDefs(svg, color) {
+  var SHARED_NEUTRALS = ["black", "white"];
+  var DEFAULT_PALETTE = PALETTES[0];
+  function swatchColors(palette) {
+    return [...palette.colors, ...SHARED_NEUTRALS, palette.accentNeutral];
+  }
+  function cyclePalette(current, step) {
+    const n = PALETTES.length;
+    const found = PALETTES.findIndex((p) => p.name === current.name);
+    const i = found === -1 ? PALETTES.indexOf(DEFAULT_PALETTE) : found;
+    return PALETTES[(i + step + n) % n];
+  }
+  function equivalentColor(color, from, to) {
+    if (color === "rainbow") return color;
+    const slot = swatchColors(from).indexOf(color);
+    const target = swatchColors(to)[slot];
+    return slot === -1 || target === void 0 ? "black" : target;
+  }
+
+  // src/tools/stamp/colorize.ts
+  function buildRainbowStops(colors) {
+    const n = colors.length;
+    return colors.map((color, i) => {
+      const offset = n > 1 ? i / (n - 1) * 100 : 0;
+      return `<stop offset="${offset}%" stop-color="${color}"/>`;
+    }).join("");
+  }
+  function buildDefs(svg, color, rainbowColors) {
     if (color === "rainbow") {
       const vbMatch = svg.match(/viewBox="[\d.]+ [\d.]+ ([\d.]+)/);
       const vbW = vbMatch ? parseFloat(vbMatch[1]) : 512;
-      const stops = RAINBOW_STOPS.map((s) => `<stop offset="${s.offset}" stop-color="${s.color}"/>`).join("");
+      const stops = buildRainbowStops(rainbowColors);
       return `<defs><linearGradient id="sc" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="${vbW}" y2="0">${stops}</linearGradient></defs>`;
     }
     return `<defs><linearGradient id="sc"><stop stop-color="${color}"/></linearGradient></defs>`;
   }
-  function colorizeStamp(base64Svg, color) {
+  function colorizeStamp(base64Svg, color, rainbowColors = DEFAULT_PALETTE.colors) {
     const svg = window.atob(base64Svg);
-    const defs = buildDefs(svg, color);
+    const defs = buildDefs(svg, color, rainbowColors);
     return window.btoa(svg.replace(/(<svg[^>]*>)/, `$1${defs}`));
   }
 
@@ -175,7 +219,11 @@
       const stampPx = drawHorse.brushSize * (50 / SIZE_DEFAULT);
       const halfStamp = stampPx / 2;
       const img = new Image(stampPx, stampPx);
-      img.src = "data:image/svg+xml;base64," + colorizeStamp(drawHorse.selectedStamp.url, drawHorse.selectedColor);
+      img.src = "data:image/svg+xml;base64," + colorizeStamp(
+        drawHorse.selectedStamp.url,
+        drawHorse.selectedColor,
+        drawHorse.activePalette.colors
+      );
       img.onload = function() {
         drawHorse.ctx.drawImage(img, drawHorse.pos.x - halfStamp, drawHorse.pos.y - halfStamp, stampPx, stampPx);
       };
@@ -185,11 +233,10 @@
   };
 
   // src/tools/bubbles.ts
-  var RAINBOW_COLORS3 = ["red", "orange", "yellow", "green", "blue", "violet", "purple"];
-  function getRainbowColorForY(centerY, canvasHeight) {
-    const sliceHeight = canvasHeight / RAINBOW_COLORS3.length;
+  function getRainbowColorForY(centerY, canvasHeight, colors) {
+    const sliceHeight = canvasHeight / colors.length;
     const sliceIndex = Math.floor((canvasHeight - centerY) / sliceHeight);
-    return RAINBOW_COLORS3[Math.max(0, Math.min(RAINBOW_COLORS3.length - 1, sliceIndex))];
+    return colors[Math.max(0, Math.min(colors.length - 1, sliceIndex))];
   }
   var BUBBLE_BASE64_1 = "PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUyIiByPSI0MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIlJSUlIiBzdHJva2Utd2lkdGg9IjUiLz48ZWxsaXBzZSBjeD0iMzYiIGN5PSIyOCIgcng9IjExIiByeT0iNiIgdHJhbnNmb3JtPSJyb3RhdGUoLTM1IDM2IDI4KSIgZmlsbD0iJSUlJSIvPjwvc3ZnPg==";
   var BUBBLE_BASE64_2 = "PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUyIiByPSI0MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIlJSUlIiBzdHJva2Utd2lkdGg9IjUiLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSIyOCIgcng9IjExIiByeT0iNiIgdHJhbnNmb3JtPSJyb3RhdGUoMzUgNjQgMjgpIiBmaWxsPSIlJSUlIi8+PC9zdmc+";
@@ -229,7 +276,11 @@
         const drawX = drawHorse.pos.x - settings.size / 2 + xOffset;
         const drawY = drawHorse.pos.y - settings.size / 2 - yOffset;
         const bubbleCenterY = drawY + bubbleSize / 2;
-        const color = drawHorse.selectedColor === "rainbow" ? getRainbowColorForY(bubbleCenterY, drawHorse.ctx.canvas.height) : drawHorse.selectedColor;
+        const color = drawHorse.selectedColor === "rainbow" ? getRainbowColorForY(
+          bubbleCenterY,
+          drawHorse.ctx.canvas.height,
+          drawHorse.activePalette.colors
+        ) : drawHorse.selectedColor;
         img.src = "data:image/svg+xml;base64," + colorizeBubbleSvg(base64, color);
         img.onload = function() {
           drawHorse.ctx.drawImage(img, drawX, drawY, bubbleSize, bubbleSize);
@@ -504,6 +555,7 @@
     // Known bug preserved: selectedColor appears twice in script.js (lines 472 and 478).
     // JavaScript uses the last definition; TypeScript only allows one — behavior is identical.
     selectedColor: "black",
+    activePalette: DEFAULT_PALETTE,
     currentTool: void 0,
     // set to tools.pencil in main.ts during initialization
     selectedStamp: void 0,
@@ -672,6 +724,24 @@
         drawHorse.endPosition(e);
       });
     },
+    // Render swatches dynamically from the active palette. Each swatch stores its
+    // color in a data-color attribute (colors may be hex, which can't be an element
+    // id or id-selector) and is painted via inline style.backgroundColor. The rainbow
+    // swatch is special: data-color="rainbow", its gradient look comes from CSS.
+    renderColorChoices() {
+      const container = document.getElementById("swatches");
+      if (!container) return;
+      let html = swatchColors(drawHorse.activePalette).map(
+        (color) => `<button class="colorChoice" data-color="${color}" style="background-color:${color}"></button>`
+      ).join("");
+      html += `<button id="rainbow" class="colorChoice" data-color="rainbow"></button>`;
+      container.innerHTML = html;
+      drawHorse.setupColorChooser();
+      const selected = container.querySelector(
+        `.colorChoice[data-color="${drawHorse.selectedColor}"]`
+      );
+      if (selected) selected.classList.add("selectedColorChoice");
+    },
     setupColorChooser() {
       drawHorse.colorChoices = document.getElementsByClassName("colorChoice");
       for (let i = 0; i < drawHorse.colorChoices.length; i++) {
@@ -679,15 +749,40 @@
         drawHorse.colorChoices[i].onclick = drawHorse.getColorChoiceClickHandler(drawHorse.colorChoices[i]);
       }
     },
+    // Apply a palette: set state and re-render swatches. The selected color is translated
+    // to its equivalent slot in the new palette (red -> pastel pink -> ...); black, white
+    // and rainbow stay as they are. renderColorChoices() restores the swatch highlight.
+    applyPalette(palette) {
+      drawHorse.selectedColor = equivalentColor(
+        drawHorse.selectedColor,
+        drawHorse.activePalette,
+        palette
+      );
+      drawHorse.activePalette = palette;
+      drawHorse.renderColorChoices();
+    },
+    // Two arrow buttons step through the palettes like a ring buffer: ▶ (above the
+    // swatches) goes to the next palette, ◀ (below them) to the previous, and both wrap.
+    // Assigned via onclick (not addEventListener) so wiring twice never double-steps.
+    setupPalettePicker() {
+      const step = (direction) => () => {
+        playSound("clickSound");
+        drawHorse.applyPalette(cyclePalette(drawHorse.activePalette, direction));
+      };
+      const next = document.getElementById("palette-next");
+      const prev = document.getElementById("palette-prev");
+      if (next) next.onclick = step(1);
+      if (prev) prev.onclick = step(-1);
+    },
     getColorChoiceClickHandler(cc) {
       return (e) => {
-        drawHorse.selectedColor = cc.id;
+        drawHorse.selectedColor = cc.dataset.color ?? "";
         const colorChoiceControls = document.getElementsByClassName("colorChoice");
         for (let i = 0; i < colorChoiceControls.length; i++) {
           colorChoiceControls[i].classList.remove("selectedColorChoice");
         }
         ;
-        e.target.classList.add("selectedColorChoice");
+        e.currentTarget.classList.add("selectedColorChoice");
       };
     },
     makeStampChoiceHandler(cc) {
@@ -698,7 +793,11 @@
     setupStamps() {
       Object.entries(drawHorse.stamps).forEach(([_key, value]) => {
         const stampchooser = document.getElementById("stampchooser");
-        const colorized = colorizeStamp(value.url, drawHorse.selectedColor);
+        const colorized = colorizeStamp(
+          value.url,
+          drawHorse.selectedColor,
+          drawHorse.activePalette.colors
+        );
         stampchooser.innerHTML += `<button id='${value.id}' class='stampchoice'><img width='30px' max-width='30px' max-height='30px' src='data:image/svg+xml;base64,${colorized}' alt='${value.name}'/></button>`;
       });
       const stampChoices = document.getElementsByClassName("stampchoice");
@@ -719,8 +818,8 @@
     hideStampSelectors() {
     },
     showColorSelectors() {
-      const colorchooser = document.getElementById("colorchooser");
-      colorchooser.style.display = "";
+      const colorsCol = document.getElementById("colors-col");
+      if (colorsCol) colorsCol.style.display = "";
     }
   };
 
@@ -742,7 +841,8 @@
   globalThis.pauseSound = pauseSound;
   drawHorse.currentTool = tools.pencil;
   window.onload = (_event) => {
-    drawHorse.setupColorChooser();
+    drawHorse.renderColorChoices();
+    drawHorse.setupPalettePicker();
     drawHorse.ctx = drawHorse.canvas.getContext("2d");
     drawHorse.resize();
     drawHorse.addListeners();

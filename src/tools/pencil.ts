@@ -4,7 +4,6 @@ import { drawHorse } from '../drawHorse'
 import { playSound, pauseSound } from '../sounds'
 import { rainbowStripeWidth } from '../sizeControl'
 
-const RAINBOW_COLORS = ['red', 'orange', 'yellow', 'green', 'blue', 'pink', 'purple']
 
 export const pencil: Tool = {
   name: 'pencil',
@@ -36,8 +35,11 @@ export const pencil: Tool = {
       const cosP = Math.cos(perpAngle)
       const sinP = Math.sin(perpAngle)
 
-      RAINBOW_COLORS.forEach((color, i) => {
-        const offset = (i - 3) * stripeWidth
+      // Rainbow color source follows the active palette; stripe count follows length.
+      const rainbowColors = drawHorse.activePalette.colors
+      const center = Math.floor(rainbowColors.length / 2)
+      rainbowColors.forEach((color, i) => {
+        const offset = (i - center) * stripeWidth
         drawHorse.ctx.beginPath()
         drawHorse.ctx.lineWidth = stripeWidth
         drawHorse.ctx.lineCap = 'round'

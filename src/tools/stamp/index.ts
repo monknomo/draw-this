@@ -28,7 +28,11 @@ export const stamp: Tool = {
     const img = new Image(stampPx, stampPx)
     img.src =
       'data:image/svg+xml;base64,' +
-      colorizeStamp(drawHorse.selectedStamp!.url, drawHorse.selectedColor)
+      colorizeStamp(
+        drawHorse.selectedStamp!.url,
+        drawHorse.selectedColor,
+        drawHorse.activePalette.colors
+      )
     img.onload = function () {
       drawHorse.ctx.drawImage(img, drawHorse.pos.x - halfStamp, drawHorse.pos.y - halfStamp, stampPx, stampPx)
     }

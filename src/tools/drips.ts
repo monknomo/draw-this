@@ -4,7 +4,6 @@ import { drawHorse } from '../drawHorse'
 import { playSound, pauseSound } from '../sounds'
 import { SIZE_DEFAULT } from '../sizeControl'
 
-const RAINBOW_COLORS = ['red', 'orange', 'yellow', 'green', 'blue', 'violet', 'purple']
 let rainbowIndex = 0
 
 // Exported for testing — verifies AC4.1 and AC4.2 in import-based tests
@@ -39,8 +38,10 @@ export const drips: Tool & { getDripSize: () => number } = {
   draw(e) {
     playSound('drippingSound')
     drawHorse.setPosition(e)
+    // Rainbow cycles one color per drip from the active palette (index modulo length).
+    const rainbowColors = drawHorse.activePalette.colors
     const color = drawHorse.selectedColor === 'rainbow'
-      ? RAINBOW_COLORS[rainbowIndex++ % RAINBOW_COLORS.length]
+      ? rainbowColors[rainbowIndex++ % rainbowColors.length]
       : drawHorse.selectedColor
     drawHorse.ctx.fillStyle = color
     drawHorse.ctx.beginPath()
