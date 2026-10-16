@@ -31,6 +31,7 @@ document.body.innerHTML = `
       <button id="rainbow" class="colorChoice">r</button>
       <button id="size-increase" class="sizeChoice" disabled>+</button>
       <button id="size-decrease" class="sizeChoice" disabled>-</button>
+      <div id="size-preview" class="disabled"><span id="size-dot"></span></div>
     </div>
     <audio id="clickSound"></audio>
     <audio id="drippingSound"></audio>

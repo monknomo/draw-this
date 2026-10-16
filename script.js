@@ -566,13 +566,38 @@
       drawHorse.ctx.fillStyle = "white";
       drawHorse.ctx.fillRect(0, 0, drawHorse.ctx.canvas.width, drawHorse.ctx.canvas.height);
     },
-    // Enable the +/- buttons only for tools that honor the global brush size.
-    updateSizeControls() {
+    // Sync the size UI: enable +/- only for tools that honor the global brush size,
+    // and redraw the preview dot. `feedback` plays a pop (size changed) or nudge (hit a limit).
+    updateSizeControls(feedback) {
       const enabled = !!drawHorse.currentTool.usesSize;
       for (const id of ["size-increase", "size-decrease"]) {
         const btn = document.getElementById(id);
         if (btn) btn.disabled = !enabled;
       }
+      const preview = document.getElementById("size-preview");
+      const dot = document.getElementById("size-dot");
+      if (!preview || !dot) return;
+      preview.classList.toggle("disabled", !enabled);
+      preview.dataset.size = String(drawHorse.brushSize);
+      preview.title = `Size ${drawHorse.brushSize}`;
+      const px = Math.round(4 + drawHorse.brushSize * 0.78);
+      dot.style.width = dot.style.height = `${px}px`;
+      if (feedback) {
+        dot.classList.remove("pop", "nudge");
+        void dot.offsetWidth;
+        dot.classList.add(feedback);
+      }
+    },
+    changeSize(direction) {
+      const before = drawHorse.brushSize;
+      drawHorse.brushSize = nextSize(before, direction);
+      const click = document.getElementById("clickSound");
+      if (click) {
+        click.currentTime = 0;
+        void click.play()?.catch?.(() => {
+        });
+      }
+      drawHorse.updateSizeControls(drawHorse.brushSize === before ? "nudge" : "pop");
     },
     addListeners() {
       window.addEventListener("resize", drawHorse.resize);
@@ -589,7 +614,6 @@
             }
             toolEl.classList.add("selectedControl");
             drawHorse.currentTool = tool;
-            drawHorse.brushSize = SIZE_DEFAULT;
             drawHorse.updateSizeControls();
           }
           tool.onclick(e);
@@ -600,12 +624,12 @@
       const sizeDecreaseBtn = document.getElementById("size-decrease");
       if (sizeIncreaseBtn) {
         sizeIncreaseBtn.addEventListener("click", () => {
-          drawHorse.brushSize = nextSize(drawHorse.brushSize, 1);
+          drawHorse.changeSize(1);
         });
       }
       if (sizeDecreaseBtn) {
         sizeDecreaseBtn.addEventListener("click", () => {
-          drawHorse.brushSize = nextSize(drawHorse.brushSize, -1);
+          drawHorse.changeSize(-1);
         });
       }
       document.querySelectorAll(".category").forEach((btn) => {

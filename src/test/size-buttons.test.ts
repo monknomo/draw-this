@@ -8,6 +8,7 @@ describe('size +/- buttons', () => {
   beforeEach(() => {
     click('pencil')
     click('red')
+    dh().brushSize = 5  // size persists across tools now, so pin it per test
   })
 
   it('do not change the selected colour', () => {
@@ -54,5 +55,62 @@ describe('size buttons enabled state', () => {
     click('bubbles')
     click('pencil')
     expect(btn('size-increase').disabled).toBe(false)
+  })
+})
+
+describe('size persistence', () => {
+  it('keeps the chosen size when switching tools', () => {
+    click('pencil')
+    dh().brushSize = 5
+    click('size-increase')
+    click('size-increase')
+    click('size-increase')
+    expect(dh().brushSize).toBe(8)
+    click('eraser')
+    expect(dh().brushSize).toBe(8)
+    click('bubbles')
+    expect(dh().brushSize).toBe(8)
+    click('stamp')
+    expect(dh().brushSize).toBe(8)
+  })
+})
+
+describe('size feedback', () => {
+  const preview = () => document.getElementById('size-preview') as HTMLElement
+  const dot = () => document.getElementById('size-dot') as HTMLElement
+
+  beforeEach(() => {
+    click('pencil')
+    dh().brushSize = 5
+    dh().updateSizeControls()
+  })
+
+  it('preview reflects the current size and grows with it', () => {
+    const before = parseInt(dot().style.width)
+    click('size-increase')
+    expect(preview().dataset.size).toBe('6')
+    expect(preview().title).toBe('Size 6')
+    expect(parseInt(dot().style.width)).toBeGreaterThan(before)
+  })
+
+  it('pops the dot when the size changes', () => {
+    click('size-increase')
+    expect(dot().classList.contains('pop')).toBe(true)
+    expect(dot().classList.contains('nudge')).toBe(false)
+  })
+
+  it('nudges instead of popping when a limit is hit', () => {
+    dh().brushSize = 1
+    dh().updateSizeControls()
+    click('size-decrease')
+    expect(dh().brushSize).toBe(1)
+    expect(dot().classList.contains('nudge')).toBe(true)
+  })
+
+  it('dims the preview for tools that ignore size', () => {
+    click('bubbles')
+    expect(preview().classList.contains('disabled')).toBe(true)
+    click('pencil')
+    expect(preview().classList.contains('disabled')).toBe(false)
   })
 })
