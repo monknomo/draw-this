@@ -21,9 +21,9 @@
   var SIZE_MAX = 50;
   var SIZE_DEFAULT = 5;
   var STEP_SCHEDULE = [
-    { threshold: 10, step: 1 },
-    { threshold: 20, step: 2 },
-    { threshold: Infinity, step: 5 }
+    { threshold: 10, step: 2 },
+    { threshold: 30, step: 5 },
+    { threshold: Infinity, step: 10 }
   ];
   function nextSize(current, direction) {
     const tier = STEP_SCHEDULE.find((t) => current < t.threshold);

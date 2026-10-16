@@ -4,39 +4,44 @@ import { nextSize, rainbowStripeWidth, SIZE_MIN, SIZE_MAX, SIZE_DEFAULT } from '
 
 describe('nextSize', () => {
   describe('increasing direction', () => {
-    it('steps by 1 when current is below 10', () => {
-      expect(nextSize(5, 1)).toBe(6)
-      expect(nextSize(1, 1)).toBe(2)
-      expect(nextSize(9, 1)).toBe(10)
+    it('steps by 2 when current is below 10', () => {
+      expect(nextSize(5, 1)).toBe(7)
+      expect(nextSize(1, 1)).toBe(3)
+      expect(nextSize(9, 1)).toBe(11)
     })
 
-    it('steps by 2 when current is in the 10–19 range', () => {
-      expect(nextSize(10, 1)).toBe(12)
-      expect(nextSize(15, 1)).toBe(17)
-      expect(nextSize(19, 1)).toBe(21)
+    it('steps by 5 when current is in the 10–29 range', () => {
+      expect(nextSize(10, 1)).toBe(15)
+      expect(nextSize(16, 1)).toBe(21)
+      expect(nextSize(29, 1)).toBe(34)
     })
 
-    it('steps by 5 when current is 20 or above', () => {
-      expect(nextSize(20, 1)).toBe(25)
-      expect(nextSize(30, 1)).toBe(35)
-      expect(nextSize(45, 1)).toBe(50)
+    it('steps by 10 when current is 30 or above', () => {
+      expect(nextSize(30, 1)).toBe(40)
+      expect(nextSize(40, 1)).toBe(50)
+    })
+
+    it('five clicks from the default is a noticeable jump', () => {
+      let size = SIZE_DEFAULT
+      for (let i = 0; i < 5; i++) size = nextSize(size, 1)
+      expect(size).toBe(21)
     })
   })
 
   describe('decreasing direction', () => {
-    it('steps by 1 when current is below 10', () => {
-      expect(nextSize(5, -1)).toBe(4)
-      expect(nextSize(9, -1)).toBe(8)
+    it('steps by 2 when current is below 10', () => {
+      expect(nextSize(5, -1)).toBe(3)
+      expect(nextSize(9, -1)).toBe(7)
     })
 
-    it('steps by 2 when current is in the 10–19 range', () => {
-      expect(nextSize(10, -1)).toBe(8)
-      expect(nextSize(15, -1)).toBe(13)
+    it('steps by 5 when current is in the 10–29 range', () => {
+      expect(nextSize(10, -1)).toBe(5)
+      expect(nextSize(21, -1)).toBe(16)
     })
 
-    it('steps by 5 when current is 20 or above', () => {
-      expect(nextSize(20, -1)).toBe(15)
-      expect(nextSize(30, -1)).toBe(25)
+    it('steps by 10 when current is 30 or above', () => {
+      expect(nextSize(30, -1)).toBe(20)
+      expect(nextSize(50, -1)).toBe(40)
     })
   })
 
@@ -44,6 +49,7 @@ describe('nextSize', () => {
     it('does not exceed SIZE_MAX when increasing at the ceiling', () => {
       expect(nextSize(SIZE_MAX, 1)).toBe(SIZE_MAX)
       expect(nextSize(SIZE_MAX - 1, 1)).toBe(SIZE_MAX)
+      expect(nextSize(45, 1)).toBe(SIZE_MAX)
     })
 
     it('does not go below SIZE_MIN when decreasing at the floor', () => {

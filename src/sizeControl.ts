@@ -9,9 +9,9 @@ export const SIZE_DEFAULT = 5
 // Tiers are checked in order; the last entry acts as the catch-all.
 // To retune the feel, edit the threshold/step pairs — no logic changes needed.
 const STEP_SCHEDULE: Array<{ threshold: number; step: number }> = [
-  { threshold: 10, step: 1 },
-  { threshold: 20, step: 2 },
-  { threshold: Infinity, step: 5 },
+  { threshold: 10, step: 2 },
+  { threshold: 30, step: 5 },
+  { threshold: Infinity, step: 10 },
 ]
 
 /**
