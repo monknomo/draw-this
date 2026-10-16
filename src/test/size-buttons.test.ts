@@ -28,7 +28,7 @@ describe('size +/- buttons', () => {
   it('change brush size', () => {
     expect(dh().brushSize).toBe(5)
     click('size-increase')
-    expect(dh().brushSize).toBe(7)
+    expect(dh().brushSize).toBe(10)
   })
 
   it('are not styled or registered as colour choices', () => {
@@ -64,14 +64,13 @@ describe('size persistence', () => {
     dh().brushSize = 5
     click('size-increase')
     click('size-increase')
-    click('size-increase')
-    expect(dh().brushSize).toBe(11)
+    expect(dh().brushSize).toBe(20)
     click('eraser')
-    expect(dh().brushSize).toBe(11)
+    expect(dh().brushSize).toBe(20)
     click('bubbles')
-    expect(dh().brushSize).toBe(11)
+    expect(dh().brushSize).toBe(20)
     click('stamp')
-    expect(dh().brushSize).toBe(11)
+    expect(dh().brushSize).toBe(20)
   })
 })
 
@@ -88,8 +87,8 @@ describe('size feedback', () => {
   it('preview reflects the current size and grows with it', () => {
     const before = parseInt(dot().style.width)
     click('size-increase')
-    expect(preview().dataset.size).toBe('7')
-    expect(preview().title).toBe('Size 7')
+    expect(preview().dataset.size).toBe('10')
+    expect(preview().title).toBe('Size 10')
     expect(parseInt(dot().style.width)).toBeGreaterThan(before)
   })
 

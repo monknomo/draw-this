@@ -3,46 +3,41 @@ import { describe, it, expect } from 'vitest'
 import { nextSize, rainbowStripeWidth, SIZE_MIN, SIZE_MAX, SIZE_DEFAULT } from '../sizeControl'
 
 describe('nextSize', () => {
-  describe('increasing direction', () => {
-    it('steps by 2 when current is below 10', () => {
-      expect(nextSize(5, 1)).toBe(7)
-      expect(nextSize(1, 1)).toBe(3)
-      expect(nextSize(9, 1)).toBe(11)
-    })
-
-    it('steps by 5 when current is in the 10–29 range', () => {
-      expect(nextSize(10, 1)).toBe(15)
-      expect(nextSize(16, 1)).toBe(21)
-      expect(nextSize(29, 1)).toBe(34)
-    })
-
-    it('steps by 10 when current is 30 or above', () => {
-      expect(nextSize(30, 1)).toBe(40)
-      expect(nextSize(40, 1)).toBe(50)
-    })
-
-    it('five clicks from the default is a noticeable jump', () => {
-      let size = SIZE_DEFAULT
-      for (let i = 0; i < 5; i++) size = nextSize(size, 1)
-      expect(size).toBe(21)
-    })
+  it('walks the ladder 1, 5, 10, 20, 30, 50 going up', () => {
+    const seen = [SIZE_MIN]
+    for (let i = 0; i < 5; i++) seen.push(nextSize(seen[seen.length - 1], 1))
+    expect(seen).toEqual([1, 5, 10, 20, 30, 50])
   })
 
-  describe('decreasing direction', () => {
-    it('steps by 2 when current is below 10', () => {
-      expect(nextSize(5, -1)).toBe(3)
-      expect(nextSize(9, -1)).toBe(7)
-    })
+  it('walks the same ladder back down', () => {
+    const seen = [SIZE_MAX]
+    for (let i = 0; i < 5; i++) seen.push(nextSize(seen[seen.length - 1], -1))
+    expect(seen).toEqual([50, 30, 20, 10, 5, 1])
+  })
 
-    it('steps by 5 when current is in the 10–29 range', () => {
-      expect(nextSize(10, -1)).toBe(5)
-      expect(nextSize(21, -1)).toBe(16)
-    })
+  it('up then down returns to the same size', () => {
+    for (const rung of [1, 5, 10, 20, 30]) {
+      expect(nextSize(nextSize(rung, 1), -1)).toBe(rung)
+    }
+  })
 
-    it('steps by 10 when current is 30 or above', () => {
-      expect(nextSize(30, -1)).toBe(20)
-      expect(nextSize(50, -1)).toBe(40)
-    })
+  it('snaps an off-ladder size to the nearest rung in the direction of travel', () => {
+    expect(nextSize(7, 1)).toBe(10)
+    expect(nextSize(7, -1)).toBe(5)
+    expect(nextSize(45, 1)).toBe(SIZE_MAX)
+    expect(nextSize(2, -1)).toBe(SIZE_MIN)
+  })
+
+  it('has about half as many stops as before (5 steps across the range)', () => {
+    let size = SIZE_MIN
+    let steps = 0
+    while (nextSize(size, 1) !== size) { size = nextSize(size, 1); steps++ }
+    expect(size).toBe(SIZE_MAX)
+    expect(steps).toBe(5)
+  })
+
+  it('SIZE_DEFAULT is on the ladder', () => {
+    expect(nextSize(nextSize(SIZE_DEFAULT, 1), -1)).toBe(SIZE_DEFAULT)
   })
 
   describe('clamping', () => {

@@ -20,15 +20,10 @@
   var SIZE_MIN = 1;
   var SIZE_MAX = 50;
   var SIZE_DEFAULT = 5;
-  var STEP_SCHEDULE = [
-    { threshold: 10, step: 2 },
-    { threshold: 30, step: 5 },
-    { threshold: Infinity, step: 10 }
-  ];
+  var SIZE_STEPS = [1, 5, 10, 20, 30, 50];
   function nextSize(current, direction) {
-    const tier = STEP_SCHEDULE.find((t) => current < t.threshold);
-    const step = tier.step;
-    return Math.min(SIZE_MAX, Math.max(SIZE_MIN, current + direction * step));
+    const next = direction === 1 ? SIZE_STEPS.find((s) => s > current) ?? SIZE_MAX : [...SIZE_STEPS].reverse().find((s) => s < current) ?? SIZE_MIN;
+    return Math.min(SIZE_MAX, Math.max(SIZE_MIN, next));
   }
   function rainbowStripeWidth(size) {
     return Math.max(1, size / SIZE_DEFAULT);
